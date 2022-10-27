@@ -88,7 +88,7 @@ begin
         dec =16'b0000_0000_0000_0100;
         MUX_SEL = 4'b0010;
       end   
-    8'h52:  					//MEMORY MAP --> 0x5200_0000 to 0x52FF_FFFF  16MB
+    8'h52:  						//MEMORY MAP --> 0x5200_0000 to 0x52FF_FFFF  16MB
       begin
         dec = 16'b0000_0000_0000_1000;
         MUX_SEL = 4'b0011;

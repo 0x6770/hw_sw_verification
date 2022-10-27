@@ -8,6 +8,8 @@ wire [7:0] LED;
 
 AHBLITE_SYS dut(.CLK(CLK), .RESET(RESET), .LED(LED));
 
+// Note: you can modify this to give a 50MHz clock or whatever is appropriate
+
 initial
 begin
    CLK=0;
