@@ -35,7 +35,10 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module AHBGPIO (
+module AHBGPIO #(
+    parameter GPIO_DATA_ADDR = 8'h00,
+    parameter GPIO_DIR_ADDR  = 8'h04
+) (
     input wire HCLK,
     input wire HRESETn,
     input wire [31:0] HADDR,
@@ -51,10 +54,6 @@ module AHBGPIO (
     output wire [31:0] HRDATA,
     output wire [15:0] GPIOOUT
 );
-
-  localparam byte [7:0] gpio_data_addr = 8'h00;
-  localparam byte [7:0] gpio_dir_addr = 8'h04;
-
   reg [15:0] gpio_dataout;
   reg [15:0] gpio_datain;
   reg [15:0] gpio_dir;
@@ -83,7 +82,7 @@ module AHBGPIO (
   always @(posedge HCLK, negedge HRESETn) begin
     if (!HRESETn) begin
       gpio_dir <= 16'h0000;
-    end else if ((last_HADDR[7:0] == gpio_dir_addr) & last_HSEL & last_HWRITE & last_HTRANS[1])
+    end else if ((last_HADDR[7:0] == GPIO_DIR_ADDR) & last_HSEL & last_HWRITE & last_HTRANS[1])
       gpio_dir <= HWDATA[15:0];
   end
 
@@ -92,7 +91,7 @@ module AHBGPIO (
     if (!HRESETn) begin
       gpio_dataout <= 16'h0000;
     end
-    else if ((gpio_dir == 16'h0001) & (last_HADDR[7:0] == gpio_data_addr) & last_HSEL & last_HWRITE & last_HTRANS[1])
+    else if ((gpio_dir == 16'h0001) & (last_HADDR[7:0] == GPIO_DATA_ADDR) & last_HSEL & last_HWRITE & last_HTRANS[1])
       gpio_dataout <= HWDATA[15:0];
   end
 

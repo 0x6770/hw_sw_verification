@@ -1,27 +1,28 @@
 class AHB_transaction;
-  static int        count     = 0;
+  static int        count   = 0;
   int               id;
 
   // AHB interface signals
-  logic             ready;
+  // logic             ready;
   rand logic [31:0] addr;
-  logic      [ 1:0] trans;
-  logic             write;
-  logic      [ 2:0] size;
+  rand logic [ 1:0] trans;
+  rand logic        write;
+  rand logic [ 2:0] size;
   rand logic [31:0] wdata;
-  logic             readyout;
+  // logic             readyout;
   rand logic [31:0] rdata;
-  logic             parity;
+  rand logic        parity;
 
   function void display(string tag = "");
-    $display("T=0%t [%s]", $time, tag);
-    $display("===== AHB transaction =====");
+    $display("T=%t [%s]", $time, tag);
+    // $display("===== AHB transaction [%0d] =====", id);
+    $display("id:        %h", id);
     $display("HADDR:     %h", addr);
     $display("HWRITE:    %d", write);
     $display("HWDATA:    %h", wdata);
     $display("HRDATA:    %h", rdata);
-    $display("HREADY:    %h", ready);
-    $display("HREADYOUT: %h", readyout);
+    // $display("HREADY:    %h", ready);
+    // $display("HREADYOUT: %h", readyout);
     $display("HTRANS:    %h", trans);
     $display("HSIZE:     %h", size);
     $display("parity:    %h", parity);
@@ -31,12 +32,13 @@ class AHB_transaction;
     id = count++;
   endfunction : new
 
-  function void check_partity();
-    observed = ^wdata;
+  function void check_parity();
+    logic observed = ^wdata;
     if (observed === parity) begin
-      $display("T=0%t [AHB transaction] : parity match", $time);
+      $display("T=%t [AHB transaction] : parity match", $time);
     end else begin
-      $display("T=0%t [AHB transaction] : parity mismatch, observed: %0h expected: %0h", $time);
+      $display("T=%t [AHB transaction] : parity mismatch, observed: %0h expected: %0h", $time,
+               observed, parity);
     end
   endfunction : check_parity
 

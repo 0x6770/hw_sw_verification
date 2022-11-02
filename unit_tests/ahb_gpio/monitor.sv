@@ -1,25 +1,29 @@
 class AHB_monitor;
   virtual ahb_if vif;
-  mailbox scb_box;
+  mailbox scb_observed_box;
+
+  function new(mailbox scb_observed_box);
+    this.scb_observed_box = scb_observed_box;
+  endfunction
 
   task run();
-    $display("T=0%t [AHB Monitor] : starting");
+    $display("T=%t [AHB Monitor] : starting", $time);
 
-    forever begin
-      @(posedge vif.clk);
-      if (vif.HSEL) begin
-        AHB_transaction item = new();
-        item.addr = vif.addr;
-        item.data = vid.data;
+    //   forever begin
+    //     @(posedge vif.clk);
+    //     if (vif.sel) begin
+    //       AHB_transaction item = new();
+    //       item.addr  = vif.addr;
+    //       item.wdata = vif.wdata;
 
-        if (!vif.wr) begin
-          @(posedge vid.clk);
-          item.rdata = vif.rdata;
-        end
+    //       if (!vif.write) begin
+    //         @(posedge vif.clk);
+    //         item.rdata = vif.rdata;
+    //       end
 
-        item.display("AHB Monitor");
-        scb_box.put(item);
-      end
-    end
+    //       item.display("AHB Monitor");
+    //       scb_box.put(item);
+    //     end
+    //   end
   endtask
-endclass
+endclass : AHB_monitor

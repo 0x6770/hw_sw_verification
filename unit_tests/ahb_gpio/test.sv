@@ -1,5 +1,19 @@
-module test #(
-    parameter byte GPIO_DATA_ADDR = 8'h00,
-    parameter byte GPIO_DIR_ADDR  = 8'h04
-) ();
-endmodule
+import pkg::*;
+
+program test #(
+    parameter int NUM_TRANSACTIONS = 10
+) (
+    ahb_if  ahb_if,
+    gpio_if gpio_if
+);
+  // declaring environment instance
+  AHB_environment env;
+
+  initial begin
+    $display("[TEST] : start testing");
+    // creating environment
+    env = new(ahb_if, gpio_if, NUM_TRANSACTIONS);
+
+    env.run();
+  end
+endprogram : test

@@ -1,0 +1,6 @@
+../../rtl/AHB_GPIO/AHBGPIO.v
+ahb_interface.sv
+gpio_interface.sv
+pkg.sv
+test.sv
+tbench_top.sv
