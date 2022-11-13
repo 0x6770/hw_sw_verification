@@ -1,9 +1,9 @@
-class AHB_environment;
+class environment;
   // instantiate driver, monitor, scoreboard and generator
-  AHB_monitor monitor;
-  AHB_driver driver;
-  AHB_scoreboard scoreboard;
-  AHB_generator generator;
+  ahb_pkg::monitor monitor;
+  ahb_pkg::driver driver;
+  // scoreboard scoreboard;
+  ahb_pkg::generator generator;
 
   mailbox drv_box;
   mailbox scb_expected_box;
@@ -29,9 +29,9 @@ class AHB_environment;
     scb_observed_box = new();
     // initialise
     generator = new(.box(drv_box), .cnt(num_transactions), .finished(gen_finished));
-    driver = new(.vif(ahb_vif), .drv_box(drv_box), .scb_expected_box(scb_expected_box));
-    monitor = new(.scb_observed_box(scb_observed_box));
-    scoreboard = new(.scb_observed_box(scb_observed_box), .scb_expected_box(scb_expected_box));
+    driver = new(.vif(ahb_vif), .drv_box(drv_box));
+    monitor = new(.vif(ahb_vif), .scb_observed_box(scb_observed_box));
+    // scoreboard = new(.scb_observed_box(scb_observed_box), .scb_expected_box(scb_expected_box));
   endfunction : new
 
   task pre_test();
@@ -43,13 +43,13 @@ class AHB_environment;
       generator.run();
       driver.run();
       monitor.run();
-      scoreboard.run();
+      // scoreboard.run();
     join_any
   endtask : test
 
   task post_test();
     wait (gen_finished.triggered);
-    wait (num_transactions == driver.num_transactions_received);
+    wait (num_transactions == driver.num_items_received);
   endtask : post_test
 
   // run task
@@ -59,4 +59,4 @@ class AHB_environment;
     post_test();
     $finish;
   endtask
-endclass : AHB_environment
+endclass : environment

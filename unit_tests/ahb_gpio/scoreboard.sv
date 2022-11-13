@@ -1,8 +1,8 @@
-class AHB_scoreboard;
+class scoreboard;
   mailbox scb_expected_box;
   mailbox scb_observed_box;
 
-  AHB_transaction expected_queue[$];
+  ahb_pkg::transaction expected_queue[$];
 
   int num_observed_items = 0;
 
@@ -13,10 +13,10 @@ class AHB_scoreboard;
 
   task receive_expected_items();
     forever begin
-      AHB_transaction item;
+      transaction item;
       scb_expected_box.get(item);
 `ifdef DEBUG
-      item.display("AHB SCOREBOARD");
+      item.display("SCOREBOARD");
 `endif
       expected_queue.push_back(item);
     end
@@ -24,11 +24,11 @@ class AHB_scoreboard;
 
   task receive_observed_items();
     forever begin
-      AHB_transaction item, expected_item;
+      transaction item, expected_item;
       scb_observed_box.get(item);
       expected_item = expected_queue.pop_front();
 `ifdef DEBUG
-      item.display("AHB SCOREBOARD");
+      item.display("SCOREBOARD");
       $display("==============================");
       $display("expected: %h observed: %h", expected_item.id, item.id);
 `endif
@@ -44,4 +44,4 @@ class AHB_scoreboard;
     join
   endtask
 
-endclass : AHB_scoreboard
+endclass : scoreboard

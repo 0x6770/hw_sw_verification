@@ -5,7 +5,7 @@ interface ahb_if (
   logic        sel;  // slave select signal
   logic        ready;  // previous transfer has finished on the bus [multiplexor to master/slave]
   logic [31:0] addr;  // address
-  logic [ 1:0] trans;  // transfer type
+  logic [ 1:0] trans;  // transfer type, 2'b10 (non-sequential) for single transfer
   logic        write;  // transfer direction
   logic [ 2:0] size;  // transfer size
   logic [31:0] wdata;  // write data bus

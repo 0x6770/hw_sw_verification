@@ -21,7 +21,7 @@ module tbench_top;
   gpio_if gpio_if ();
 
   //Testcase instance, interface handle is passed to test as an argument
-  test #(100) t1 (
+  test #(20) t1 (
       .ahb_if (ahb_if),
       .gpio_if(gpio_if)
   );
@@ -44,6 +44,13 @@ module tbench_top;
       // GPIO I/O
       .GPIOIN   (gpio_if.GPIO_IN),
       .GPIOOUT  (gpio_if.GPIO_OUT)
+  );
+
+  loopback u0 (
+      .clk     (ahb_if.clk),
+      .reset_n (ahb_if.reset_n),
+      .GPIO_IN (gpio_if.GPIO_IN),
+      .GPIO_OUT(gpio_if.GPIO_OUT)
   );
 
   //enabling the wave dump

@@ -1,5 +1,3 @@
-import pkg::*;
-
 program test #(
     parameter int NUM_TRANSACTIONS = 10
 ) (
@@ -7,7 +5,7 @@ program test #(
     gpio_if gpio_if
 );
   // declaring environment instance
-  AHB_environment env;
+  pkg::environment env;
 
   initial begin
     $display("[TEST] : start testing");

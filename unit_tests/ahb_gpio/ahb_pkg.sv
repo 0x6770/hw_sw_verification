@@ -1,28 +1,32 @@
-package AHB_pkg;
+package ahb_pkg;
 
+  logic [31:0] AHB_DATA_ADDR = 32'h5300_0000;
+  logic [31:0] AHB_DIR_ADDR = 32'h5300_0004;
+
+  // Transaction for AHB
   class transaction;
-    static int        count        = 0;
+    static int        count   = 0;
     int               id;
 
     rand logic [15:0] data;
     rand logic        parity;
-    rand logic        parity_sel;
-    logic             real_parity;
+    // rand logic        parity_sel;
+    // logic             real_parity;
 
     function void display(string tag = "");
-      $display("T=%t [%s]", $time, tag);
+      $display("T=%t [%s] :", $time, tag);
       // $display("===== AHB transaction [%0d] =====", id);
-      $display("id:          %h", id);
-      $display("data:        %h", data);
-      $display("parity:      %h", parity);
-      $display("parity_sel:  %h", parity_sel);
-      $display("real_parity: %h", real_parity);
+      $display("id:     %-d", id);
+      $display("data:   0x%4h", data);
+      $display("parity: %1b", parity);
+      // $display("parity_sel:  %h", parity_sel);
+      // $display("real_parity: %h", real_parity);
     endfunction : display
 
     // constructor
     function new();
       id = count++;
-      real_parity = parity_sel ? ~(^data) : ^data;
+      // real_parity = parity_sel ? ~(^data) : ^data;
     endfunction : new
 
   endclass : transaction
@@ -58,14 +62,15 @@ package AHB_pkg;
   class driver;
     virtual ahb_if vif;
     mailbox drv_box;
-    mailbox scb_expected_box;
-    int num_transactions_received = 0;
+    // mailbox scb_expected_box;
+    int num_items_received = 0;
+    bit write = 0;
 
     // constructor
-    function new(virtual ahb_if vif, mailbox drv_box, mailbox scb_expected_box);
-      this.vif              = vif;
-      this.drv_box          = drv_box;
-      this.scb_expected_box = scb_expected_box;
+    function new(virtual ahb_if vif, mailbox drv_box);
+      this.vif     = vif;
+      this.drv_box = drv_box;
+      // this.scb_expected_box = scb_expected_box;
     endfunction
 
     //Reset task, Reset the Interface signals to default/initial values
@@ -88,32 +93,72 @@ package AHB_pkg;
       $display("T=%t [AHB DRIVER] : starting", $time);
 
       forever begin
-        transaction item;
-        vif.sel   <= 1'b0;
-        vif.write <= 1'b0;
+        // write_next = $urandom_range(0, 20) > 10;
+        // $display("write: %h, write_next: %h", write, write_next);
 
-        $display("T=%t [AHB DRIVER] : waiting for item [%0d]", $time, num_transactions_received);
-        drv_box.get(item);
-        scb_expected_box.put(item);
+        if (write) begin
+          // $display("write");
+          transaction item;
+          vif.sel   <= 1'b0;
+          vif.write <= 1'b0;
+
+          $display("T=%t [AHB DRIVER] : waiting for item [%0d]", $time, num_items_received);
+          drv_box.get(item);
+          // scb_expected_box.put(item);
 `ifdef DEBUG
-        item.display("AHB DRIVER");
+          item.display("AHB DRIVER");
 `endif
-        vif.sel   <= 1'b1;
-        vif.addr  <= item.addr;
-        vif.write <= item.write;
-        vif.size  <= item.size;
-        vif.trans <= item.trans;
-        vif.wdata <= item.wdata;
 
-        @(posedge vif.clk);
-        while (!vif.ready) begin
-          $display("T=%t [AHB DRIVER] : waiting until ready is asserted", $time);
+          // TODO: no need to reprogram GPIO if last mode is write
+          // set GPIO to write mode regardless the last mode
           @(posedge vif.clk);
-        end
+          // $display("========================================");
+          vif.sel   <= 1'b1;
+          vif.addr  <= AHB_DIR_ADDR;
+          vif.write <= 1'b1;
+          vif.size  <= 3'b010;
+          vif.trans <= 2'b10;
+          vif.wdata <= 16'h0001;  // AS OUTPUT
 
-        vif.sel   <= 1'b0;
-        vif.write <= 1'b0;
-        num_transactions_received++;
+          @(posedge vif.clk);
+          vif.sel   <= 1'b1;
+          vif.addr  <= AHB_DATA_ADDR;
+          vif.write <= 1'b1;
+          vif.size  <= 3'b010;
+          vif.trans <= 2'b10;
+          vif.wdata <= item.data;
+
+          @(posedge vif.clk);
+          while (!vif.readyout) begin
+            $display("T=%t [AHB DRIVER] : waiting until readyout is asserted", $time);
+            @(posedge vif.clk);
+          end
+
+          vif.sel   <= 1'b0;
+          vif.write <= 1'b0;
+        end else begin
+          // $display("read");
+          // $display("========================================");
+          @(posedge vif.clk);
+          vif.sel   <= 1'b1;
+          vif.addr  <= AHB_DIR_ADDR;
+          vif.write <= 1'b1;
+          vif.size  <= 3'b010;
+          vif.trans <= 2'b10;
+          vif.wdata <= 16'h0000;  // AS INPUT
+
+          @(posedge vif.clk);
+          vif.sel   <= 1'b1;
+          vif.addr  <= AHB_DATA_ADDR;
+          vif.write <= 1'b0;
+          vif.size  <= 3'b010;
+          vif.trans <= 2'b10;
+
+          @(posedge vif.clk);
+          // $display("vif.sel: %h\nvif.write: %h\nvif.addr: %h", vif.sel, vif.write, vif.addr);
+          num_items_received++;
+        end
+        write += 1;
       end
     endtask
   endclass : driver
@@ -123,7 +168,8 @@ package AHB_pkg;
     virtual ahb_if vif;
     mailbox scb_observed_box;
 
-    function new(mailbox scb_observed_box);
+    function new(virtual ahb_if vif, mailbox scb_observed_box);
+      this.vif = vif;
       this.scb_observed_box = scb_observed_box;
     endfunction
 
@@ -132,23 +178,21 @@ package AHB_pkg;
 
       forever begin
         @(posedge vif.clk);
-        if (vif.sel) begin
-          transaction item = new();
-          item.addr   = vif.addr;
-          item.trans  = vif.trans;
-          item.write  = vif.write;
-          item.size   = vif.size;
-          item.wdata  = vif.wdata;
-          item.rdata  = vif.rdata;
-          item.parity = vif.parity;
-
-          // item.display("AHBMONITOR");
-
-          scb_observed_box.put(item);
+        if (vif.sel && (vif.addr === AHB_DATA_ADDR)) begin
+          if (vif.write === 1'b1) begin
+            transaction item = new();
+            item.data = vif.wdata[15:0];
+            item.display("AHBMONITOR WRITE");
+          end else begin
+            transaction item = new();
+            item.data   = vif.rdata[15:0];
+            item.parity = vif.rdata[16];
+            item.display("AHBMONITOR READ");
+            // scb_observed_box.put(item);
+          end
         end
       end
     endtask
   endclass : monitor
 
-
-endpackage : AHB_pkg
+endpackage : ahb_pkg
