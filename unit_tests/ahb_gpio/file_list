@@ -2,7 +2,7 @@
 ahb_interface.sv
 gpio_interface.sv
 ahb_pkg.sv
-pkg.sv
+environment.sv
 loopback.sv
 test.sv
 tbench_top.sv
