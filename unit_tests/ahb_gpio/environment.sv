@@ -2,7 +2,7 @@ class environment;
   // instantiate driver, monitor, scoreboard and generator
   ahb_pkg::monitor monitor;
   ahb_pkg::driver driver;
-  // scoreboard scoreboard;
+  ahb_pkg::scoreboard scoreboard;
   ahb_pkg::generator generator;
 
   mailbox drv_box;
@@ -27,11 +27,12 @@ class environment;
     drv_box = new();
     scb_expected_box = new();
     scb_observed_box = new();
-    // initialise
+    // initialise testbench components
     generator = new(.box(drv_box), .cnt(num_transactions), .finished(gen_finished));
     driver = new(.vif(ahb_vif), .drv_box(drv_box));
-    monitor = new(.vif(ahb_vif), .scb_observed_box(scb_observed_box));
-    // scoreboard = new(.scb_observed_box(scb_observed_box), .scb_expected_box(scb_expected_box));
+    monitor = new
+        (.vif(ahb_vif), .scb_observed_box(scb_observed_box), .scb_expected_box(scb_expected_box));
+    scoreboard = new(.scb_observed_box(scb_observed_box), .scb_expected_box(scb_expected_box));
   endfunction : new
 
   task pre_test();
@@ -43,7 +44,7 @@ class environment;
       generator.run();
       driver.run();
       monitor.run();
-      // scoreboard.run();
+      scoreboard.run();
     join_any
   endtask : test
 

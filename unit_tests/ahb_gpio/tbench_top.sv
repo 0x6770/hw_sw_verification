@@ -43,7 +43,10 @@ module tbench_top;
       .HRDATA   (ahb_if.rdata),
       // GPIO I/O
       .GPIOIN   (gpio_if.GPIO_IN),
-      .GPIOOUT  (gpio_if.GPIO_OUT)
+      .GPIOOUT  (gpio_if.GPIO_OUT),
+      // parity
+      .PARITYERR(),
+      .PARITYSEL(1'b0)               // 1'b1 ? odd parity : even parity
   );
 
   loopback u0 (

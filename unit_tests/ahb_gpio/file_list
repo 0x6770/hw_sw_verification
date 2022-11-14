@@ -1,4 +1,4 @@
-../../rtl/AHB_GPIO/AHBGPIO.v
+../../rtl/AHB_GPIO/AHBGPIO.sv
 ahb_interface.sv
 gpio_interface.sv
 ahb_pkg.sv

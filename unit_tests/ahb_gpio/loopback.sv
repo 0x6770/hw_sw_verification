@@ -10,6 +10,7 @@ module loopback (
     if (!reset_n) begin
       temp <= 'h0;
     end else begin
+      // $display("loopback GPIOOUT: %h", GPIO_OUT);
       temp <= GPIO_OUT;
     end
   end
