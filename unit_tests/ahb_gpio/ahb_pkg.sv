@@ -2,31 +2,21 @@ package ahb_pkg;
 
   logic [31:0] AHB_DATA_ADDR = 32'h5300_0000;
   logic [31:0] AHB_DIR_ADDR = 32'h5300_0004;
-  bit PARITY_SEL = 0;
 
   // Transaction for AHB
   class transaction;
-    static int        count   = 0;
-    int               id;
-
     rand logic [15:0] data;
     logic             parity;
-    // rand logic        parity_sel;
-    // logic             real_parity;
 
     function void display(string tag = "");
       $display("T=%t [%s] :", $time, tag);
       // $display("===== AHB transaction [%0d] =====", id);
-      $display("id:     %-d", id);
       $display("data:   0x%4h", data);
       $display("parity: %1b", parity);
-      // $display("parity_sel:  %h", parity_sel);
-      // $display("real_parity: %h", real_parity);
     endfunction : display
 
     // constructor
     function new();
-      id = count++;
     endfunction : new
 
     function void calc_parity(bit parity_sel);
@@ -44,9 +34,9 @@ package ahb_pkg;
 
     // constructor
     function new(mailbox box, int cnt, event finished);
-      this.drv_box = box;  // getting driver mailbox form env
+      this.drv_box    = box;  // getting driver mailbox form env
       this.repeat_cnt = cnt;
-      this.finished = finished;
+      this.finished   = finished;
     endfunction
 
     // create and randomize transactions
@@ -176,11 +166,14 @@ package ahb_pkg;
     virtual ahb_if vif;
     mailbox scb_observed_box;
     mailbox scb_expected_box;
+    bit parity_sel;
 
-    function new(virtual ahb_if vif, mailbox scb_observed_box, mailbox scb_expected_box);
-      this.vif = vif;
+    function new(virtual ahb_if vif, mailbox scb_observed_box, mailbox scb_expected_box,
+                 bit parity_sel);
+      this.vif              = vif;
       this.scb_observed_box = scb_observed_box;
       this.scb_expected_box = scb_expected_box;
+      this.parity_sel       = parity_sel;
     endfunction
 
     task run();
@@ -192,7 +185,7 @@ package ahb_pkg;
           if (vif.write) begin
             transaction item = new();
             item.data = vif.wdata[15:0];
-            item.calc_parity(PARITY_SEL);
+            item.calc_parity(parity_sel);
 `ifdef DEBUG
             item.display("AHBMONITOR WRITE ");
 `endif

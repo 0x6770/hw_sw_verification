@@ -20,11 +20,15 @@ package pkg;
     virtual gpio_if gpio_vif;
 
     // constructor
-    function new(virtual ahb_if ahb_vif, virtual gpio_if gpio_vif, int num_transactions);
+    function new(virtual ahb_if ahb_vif, virtual gpio_if gpio_vif, int num_transactions,
+                 bit parity_sel, bit error);
       $display("[ENVIRONMENT] : constructing new environment");
       this.ahb_vif = ahb_vif;
       this.gpio_vif = gpio_vif;
       this.num_transactions = num_transactions;
+
+      this.gpio_vif.PARITY_SEL = parity_sel;
+
       // initialise mailbox
       drv_box = new();
       scb_expected_box = new();
@@ -32,8 +36,12 @@ package pkg;
       // initialise testbench components
       generator = new(.box(drv_box), .cnt(num_transactions), .finished(gen_finished));
       driver = new(.vif(ahb_vif), .drv_box(drv_box));
-      monitor = new
-          (.vif(ahb_vif), .scb_observed_box(scb_observed_box), .scb_expected_box(scb_expected_box));
+      monitor = new(
+          .vif(ahb_vif),
+          .scb_observed_box(scb_observed_box),
+          .scb_expected_box(scb_expected_box),
+          .parity_sel(parity_sel)
+      );
       scoreboard = new(.scb_observed_box(scb_observed_box), .scb_expected_box(scb_expected_box));
     endfunction : new
 

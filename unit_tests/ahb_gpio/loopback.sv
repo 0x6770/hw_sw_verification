@@ -1,6 +1,7 @@
 module loopback (
     input clk,
     input reset_n,
+    input bit error,
     input logic [16:0] GPIO_OUT,
     output logic [16:0] GPIO_IN
 );
@@ -15,6 +16,6 @@ module loopback (
     end
   end
 
-  assign GPIO_IN = temp;
+  assign GPIO_IN = {error ? ~temp[16] : temp[16], temp[15:0]};
 
 endmodule
