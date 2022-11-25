@@ -1,10 +1,11 @@
 program test #(
-    parameter int NUM_TRANSACTIONS = 10,
-    parameter bit PARITY_SEL = 1'b1
+    parameter int NUM_TRANSACTIONS = 10
+    // parameter bit PARITY_SEL = 1'b1
 ) (
     ahb_if ahb_if,
     gpio_if gpio_if,
-    input error
+    input bit parity_sel,
+    input bit error
 );
   // declaring environment instance
   pkg::environment env;
@@ -16,7 +17,7 @@ program test #(
         .ahb_vif(ahb_if),
         .gpio_vif(gpio_if),
         .num_transactions(NUM_TRANSACTIONS),
-        .parity_sel(PARITY_SEL),
+        .parity_sel(parity_sel),
         .error(error)
     );
 

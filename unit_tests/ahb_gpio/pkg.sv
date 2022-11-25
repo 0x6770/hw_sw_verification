@@ -40,7 +40,7 @@ package pkg;
           .vif(ahb_vif),
           .scb_observed_box(scb_observed_box),
           .scb_expected_box(scb_expected_box),
-          .parity_sel(parity_sel)
+          .parity_sel(this.gpio_vif.PARITY_SEL)
       );
       scoreboard = new(.scb_observed_box(scb_observed_box), .scb_expected_box(scb_expected_box));
     endfunction : new
@@ -60,7 +60,7 @@ package pkg;
 
     task post_test();
       wait (gen_finished.triggered);
-      wait (num_transactions == driver.num_items_received);
+      wait (num_transactions == scoreboard.num_items_observed);
     endtask : post_test
 
     // run task

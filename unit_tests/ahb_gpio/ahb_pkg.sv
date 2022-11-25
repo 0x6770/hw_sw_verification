@@ -6,7 +6,8 @@ package ahb_pkg;
   // Transaction for AHB
   class transaction;
     rand logic [15:0] data;
-    logic             parity;
+    bit               parity;
+    bit               parity_sel;
 
     function void display(string tag = "");
       $display("T=%t [%s] :", $time, tag);
@@ -19,7 +20,7 @@ package ahb_pkg;
     function new();
     endfunction : new
 
-    function void calc_parity(bit parity_sel);
+    function void calc_parity();
       parity = parity_sel ? ~(^data) : ^data;
     endfunction
 
@@ -71,6 +72,7 @@ package ahb_pkg;
     task reset;
       wait (!vif.reset_n);
       $display("T=%t [AHB DRIVER] : reset started", $time);
+      num_items_received = 0;
       vif.sel   <= 'b0;
       vif.addr  <= 'h0;
       vif.write <= 'b0;
@@ -164,9 +166,9 @@ package ahb_pkg;
   // Monitor for AHB interface
   class monitor;
     virtual ahb_if vif;
-    mailbox scb_observed_box;
-    mailbox scb_expected_box;
-    bit parity_sel;
+    mailbox        scb_observed_box;
+    mailbox        scb_expected_box;
+    bit            parity_sel;
 
     function new(virtual ahb_if vif, mailbox scb_observed_box, mailbox scb_expected_box,
                  bit parity_sel);
@@ -184,16 +186,18 @@ package ahb_pkg;
         if (vif.sel && (vif.addr === AHB_DATA_ADDR)) begin
           if (vif.write) begin
             transaction item = new();
-            item.data = vif.wdata[15:0];
-            item.calc_parity(parity_sel);
+            item.data       = vif.wdata[15:0];
+            item.parity_sel = parity_sel;
+            item.calc_parity();
 `ifdef DEBUG
             item.display("AHBMONITOR WRITE ");
 `endif
             scb_expected_box.put(item);
           end else begin
             transaction item = new();
-            item.data   = vif.rdata[15:0];
-            item.parity = vif.rdata[16];
+            item.data       = vif.rdata[15:0];
+            item.parity_sel = parity_sel;
+            item.parity     = vif.rdata[16];
 `ifdef DEBUG
             item.display("AHBMONITOR READ ");
 `endif
@@ -212,7 +216,7 @@ package ahb_pkg;
 
     transaction expected_queue[$];
 
-    int num_observed_items = 0;
+    int num_items_observed = 0;
 
     function new(mailbox scb_expected_box, mailbox scb_observed_box);
       this.scb_expected_box = scb_expected_box;
@@ -235,16 +239,17 @@ package ahb_pkg;
         transaction item, expected_item;
         scb_observed_box.get(item);
         expected_item = expected_queue.pop_front();
-        $display("==============================");
-        $display("expected: 0x%4h observed: 0x%4h", expected_item.data, item.data);
-        $display("expected: 0b%h    observed: 0b%h", expected_item.parity, item.parity);
+        $display("============================== [%d]", num_items_observed);
+        $display("expected:   0x%4h observed:   0x%4h", expected_item.data, item.data);
+        $display("expected:   0b%h    observed:   0b%h", expected_item.parity, item.parity);
+        $display("parity_sel: 0b%h    parity_sel: 0b%h", expected_item.parity_sel, item.parity_sel);
 `ifdef DEBUG
         item.display("SCOREBOARD");
         expected_item.display("SCOREBOARD");
 `endif
         assert (expected_item.data === item.data);
         assert (expected_item.parity === item.parity);
-        num_observed_items++;
+        num_items_observed++;
       end
     endtask
 

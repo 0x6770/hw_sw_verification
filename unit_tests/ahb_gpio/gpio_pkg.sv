@@ -10,6 +10,11 @@ package gpio_pkg;
     rand logic        parity_sel;
     logic             real_parity;
 
+    covergroup GPIOGroup;
+      coverpoint gpio_datain;
+      coverpoint gpio_dataout;
+    endgroup
+
     function void display(string tag = "");
       $display("T=%t [%s]", $time, tag);
       $display("id:          %h", id);

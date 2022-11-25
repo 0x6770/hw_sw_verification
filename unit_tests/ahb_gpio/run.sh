@@ -12,9 +12,13 @@ rm -rf work_opt
 vlib work
 vlog -work work \
      +acc=blnr \
+     +cover \
      -noincr \
      -timescale 1ns/1ps \
      -f file_list \
      # +define+DEBUG
 vopt -work work tbench_top -o work_opt
-vsim -c work_opt -do run_test.tcl
+vsim work_opt \
+     -do run_test.tcl \
+     -c \
+     # -coverage -gui

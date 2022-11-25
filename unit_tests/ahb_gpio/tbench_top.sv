@@ -11,7 +11,11 @@ module tbench_top;
   //reset Generation
   initial begin
     reset_n = 0;
-    #5 reset_n = 1;
+    #50 reset_n = 1;
+  end
+
+  always @(posedge clk) begin
+    parity_sel <= $random() % 2;
   end
 
   //creatinng instance of interface, inorder to connect DUT and testcase
@@ -24,12 +28,12 @@ module tbench_top;
 
   //Testcase instance, interface handle is passed to test as an argument
   test #(
-      .NUM_TRANSACTIONS(20),
-      .PARITY_SEL      (1'b0)
+      .NUM_TRANSACTIONS(20)
   ) t1 (
-      .ahb_if (ahb_if),
-      .gpio_if(gpio_if),
-      .error  (error)
+      .parity_sel(parity_sel),
+      .ahb_if    (ahb_if),
+      .gpio_if   (gpio_if),
+      .error     (error)
   );
 
   //DUT instance, interface signals are connected to the DUT ports
