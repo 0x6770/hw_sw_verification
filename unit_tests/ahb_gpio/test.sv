@@ -17,7 +17,6 @@ program test #(
         .ahb_vif(ahb_if),
         .gpio_vif(gpio_if),
         .num_transactions(NUM_TRANSACTIONS),
-        .parity_sel(parity_sel),
         .error(error)
     );
 

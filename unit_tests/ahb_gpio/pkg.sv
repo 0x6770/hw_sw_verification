@@ -20,14 +20,12 @@ package pkg;
     virtual gpio_if gpio_vif;
 
     // constructor
-    function new(virtual ahb_if ahb_vif, virtual gpio_if gpio_vif, int num_transactions,
-                 bit parity_sel, bit error);
+    function new(virtual ahb_if ahb_vif, virtual gpio_if gpio_vif, int num_transactions, bit error);
       $display("[ENVIRONMENT] : constructing new environment");
       this.ahb_vif = ahb_vif;
       this.gpio_vif = gpio_vif;
       this.num_transactions = num_transactions;
-
-      this.gpio_vif.PARITY_SEL = parity_sel;
+      this.gpio_vif.PARITY_SEL = $urandom() % 2 == 1;
 
       // initialise mailbox
       drv_box = new();

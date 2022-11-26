@@ -28,7 +28,7 @@ module tbench_top;
 
   //Testcase instance, interface handle is passed to test as an argument
   test #(
-      .NUM_TRANSACTIONS(20)
+      .NUM_TRANSACTIONS(100)
   ) t1 (
       .parity_sel(parity_sel),
       .ahb_if    (ahb_if),
