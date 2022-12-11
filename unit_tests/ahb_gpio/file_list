@@ -3,6 +3,6 @@ ahb_interface.sv
 gpio_interface.sv
 ahb_pkg.sv
 pkg.sv
-loopback.sv
+loopback/loopback.sv
 test.sv
 tbench_top.sv
