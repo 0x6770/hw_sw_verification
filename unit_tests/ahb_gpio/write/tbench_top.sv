@@ -3,6 +3,7 @@ module tbench_top;
   bit clk;
   bit reset_n;
   bit parity_sel;
+  bit error;
 
   //clock generation
   always #5 clk = ~clk;
@@ -18,12 +19,12 @@ module tbench_top;
   end
 
   //creatinng instance of interface, inorder to connect DUT and testcase
-  ahb_if  ahb_if (
+  ahb_if ahb_if (
       .clk    (clk),
       .reset_n(reset_n)
   );
+
   gpio_if gpio_if ();
-  err_if  err_if ();
 
   //Testcase instance, interface handle is passed to test as an argument
   test #(
@@ -32,7 +33,7 @@ module tbench_top;
       .parity_sel(parity_sel),
       .ahb_if    (ahb_if),
       .gpio_if   (gpio_if),
-      .err_if    (err_if)
+      .error     (error)
   );
 
   //DUT instance, interface signals are connected to the DUT ports
@@ -56,14 +57,6 @@ module tbench_top;
       // parity
       .PARITYERR(gpio_if.PARITY_ERR),
       .PARITYSEL(gpio_if.PARITY_SEL)   // 1'b1 ? odd parity : even parity
-  );
-
-  loopback u0 (
-      .clk     (ahb_if.clk),
-      .reset_n (ahb_if.reset_n),
-      .GPIO_IN (gpio_if.GPIO_IN),
-      .GPIO_OUT(gpio_if.GPIO_OUT),
-      .error   (err_if.error)
   );
 
   //enabling the wave dump

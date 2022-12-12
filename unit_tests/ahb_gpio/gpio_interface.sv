@@ -8,3 +8,7 @@ interface gpio_if;
   modport monitor(input GPIO_IN, GPIO_OUT, PARITY_SEL, PARITY_ERR);
   modport dut(input GPIO_IN, input PARITY_SEL, output GPIO_OUT, output PARITY_ERR);
 endinterface
+
+interface err_if;
+  bit error;
+endinterface

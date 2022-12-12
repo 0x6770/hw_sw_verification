@@ -4,8 +4,8 @@ program test #(
 ) (
     ahb_if ahb_if,
     gpio_if gpio_if,
-    err_if err_if,
-    input bit parity_sel
+    input bit parity_sel,
+    input bit error
 );
   // declaring environment instance
   pkg::environment env;
@@ -16,8 +16,8 @@ program test #(
     env = new(
         .ahb_vif(ahb_if),
         .gpio_vif(gpio_if),
-        .err_vif(err_if),
-        .num_transactions(NUM_TRANSACTIONS)
+        .num_transactions(NUM_TRANSACTIONS),
+        .error(error)
     );
 
     env.run();

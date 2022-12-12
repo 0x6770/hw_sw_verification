@@ -56,15 +56,17 @@ package ahb_pkg;
   // Driver for AHB interface
   class driver;
     virtual ahb_if vif;
-    mailbox drv_box;
+    virtual err_if err_vif;
+    mailbox        drv_box;
     // mailbox scb_expected_box;
     int num_items_received = 0;
     bit write = 1;
 
     // constructor
-    function new(virtual ahb_if vif, mailbox drv_box);
+    function new(virtual ahb_if vif, virtual err_if err_vif, mailbox drv_box);
       this.vif     = vif;
       this.drv_box = drv_box;
+      this.err_vif = err_vif;
       // this.scb_expected_box = scb_expected_box;
     endfunction
 
@@ -81,6 +83,19 @@ package ahb_pkg;
       vif.wdata <= 'h0;
       wait (vif.reset_n);
       $display("T=%t [AHB DRIVER] : reset ended", $time);
+    endtask
+
+    task switch_mode(bit write);
+      @(posedge vif.clk);
+      vif.sel   <= 1'b1;
+      vif.addr  <= AHB_DIR_ADDR;
+      vif.write <= 1'b1;
+      vif.size  <= 3'b010;
+      vif.trans <= 2'b10;
+      vif.ready <= 1'b1;
+      @(posedge vif.clk);  // r/w mode configuration taks 2 cycles
+      vif.sel   <= 1'b0;
+      vif.wdata <= write ? 16'h0001 : 16'h0000;
     endtask
 
     task run();
@@ -102,16 +117,7 @@ package ahb_pkg;
 `endif
           // TODO: no need to reprogram GPIO if last mode is write
           // set GPIO to write mode regardless the last mode
-          @(posedge vif.clk);
-          vif.sel   <= 1'b1;
-          vif.addr  <= AHB_DIR_ADDR;
-          vif.write <= 1'b1;
-          vif.size  <= 3'b010;
-          vif.trans <= 2'b10;
-          vif.ready <= 1'b1;
-          @(posedge vif.clk);  // r/w mode configuration taks 2 cycles
-          vif.sel   <= 1'b0;
-          vif.wdata <= 16'h0001;  // AS OUTPUT
+          switch_mode(1);
 
           @(posedge vif.clk);
           vif.sel   <= 1'b1;
@@ -133,16 +139,9 @@ package ahb_pkg;
         end else begin
           // $display("========================================");
           // $display("read");
-          @(posedge vif.clk);
-          vif.sel   <= 1'b1;
-          vif.addr  <= AHB_DIR_ADDR;
-          vif.write <= 1'b1;
-          vif.size  <= 3'b010;
-          vif.trans <= 2'b10;
-          vif.ready <= 1'b1;
-          @(posedge vif.clk);  // r/w mode configuration taks 2 cycles
-          vif.sel   <= 1'b0;
-          vif.wdata <= 16'h0000;  // AS INPUT
+          switch_mode(0);
+          err_vif.error <= $urandom_range(0, 1);
+          // error <= 1;
 
           @(posedge vif.clk);
           vif.sel   <= 1'b1;
@@ -150,8 +149,8 @@ package ahb_pkg;
           vif.write <= 1'b0;
 
           @(posedge vif.clk);
-          vif.sel   <= 1'b0;
-          vif.write <= 1'b0;
+          // vif.sel   <= 1'b0;
+          // vif.write <= 1'b0;
 
           // TODO:
           num_items_received++;
@@ -213,14 +212,16 @@ package ahb_pkg;
   class scoreboard;
     mailbox scb_expected_box;
     mailbox scb_observed_box;
+    virtual err_if err_vif;
 
     transaction expected_queue[$];
 
     int num_items_observed = 0;
 
-    function new(mailbox scb_expected_box, mailbox scb_observed_box);
+    function new(mailbox scb_expected_box, mailbox scb_observed_box, virtual err_if err_vif);
       this.scb_expected_box = scb_expected_box;
       this.scb_observed_box = scb_observed_box;
+      this.err_vif          = err_vif;
     endfunction
 
     task receive_expected_items();
@@ -248,7 +249,8 @@ package ahb_pkg;
         expected_item.display("SCOREBOARD");
 `endif
         assert (expected_item.data === item.data);
-        assert (expected_item.parity === item.parity);
+        assert (expected_item.parity === (err_vif.error ? ~item.parity : item.parity));
+        // assert (expected_item.parity === item.parity);
         num_items_observed++;
       end
     endtask
