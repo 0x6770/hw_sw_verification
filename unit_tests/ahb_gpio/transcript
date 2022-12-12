@@ -1,0 +1,107 @@
+# vsim -c work_opt -do "run_test.tcl" 
+# Start time: 16:09:16 on Nov 16,2022
+# ** Warning: License feature 'msimhdlsim' will expire in 14 days.
+# Loading sv_std.std
+# Loading work.tbench_top(fast)
+# Loading work.ahb_if(fast)
+# Loading work.gpio_if(fast)
+# ** Warning: License feature 'svverification' will expire in 14 days.
+# Loading work.ahb_if(fast)
+# Loading work.gpio_if(fast)
+# Loading work.ahb_pkg(fast)
+# Loading work.pkg(fast)
+# Loading work.test(fast)
+# Loading work.AHBGPIO(fast)
+# Loading work.loopback(fast)
+# do run_test.tcl
+# [TEST] : start testing
+# [ENVIRONMENT] : constructing new environment
+# T=                   0 [AHB DRIVER] : reset started
+# T=                5000 [AHB DRIVER] : reset ended
+# T=                5000 [AHB Monitor] : starting
+# T=               15000 [AHB DRIVER] : starting
+# T=               15000 [AHB DRIVER] : waiting for item [0]
+# T=               95000 [AHB DRIVER] : waiting for item [1]
+# ==============================
+# expected: 0xced8 observed: 0xced8
+# expected: 0b1    observed: 0b1
+# T=              175000 [AHB DRIVER] : waiting for item [2]
+# ==============================
+# expected: 0x2e07 observed: 0x2e07
+# expected: 0b1    observed: 0b1
+# T=              255000 [AHB DRIVER] : waiting for item [3]
+# ==============================
+# expected: 0xe0f4 observed: 0xe0f4
+# expected: 0b0    observed: 0b0
+# T=              335000 [AHB DRIVER] : waiting for item [4]
+# ==============================
+# expected: 0xf523 observed: 0xf523
+# expected: 0b1    observed: 0b1
+# T=              415000 [AHB DRIVER] : waiting for item [5]
+# ==============================
+# expected: 0x037f observed: 0x037f
+# expected: 0b1    observed: 0b1
+# T=              495000 [AHB DRIVER] : waiting for item [6]
+# ==============================
+# expected: 0xca0d observed: 0xca0d
+# expected: 0b1    observed: 0b1
+# T=              575000 [AHB DRIVER] : waiting for item [7]
+# ==============================
+# expected: 0x2a05 observed: 0x2a05
+# expected: 0b1    observed: 0b1
+# T=              655000 [AHB DRIVER] : waiting for item [8]
+# ==============================
+# expected: 0xc6bd observed: 0xc6bd
+# expected: 0b0    observed: 0b0
+# T=              735000 [AHB DRIVER] : waiting for item [9]
+# ==============================
+# expected: 0xd177 observed: 0xd177
+# expected: 0b0    observed: 0b0
+# T=              815000 [AHB DRIVER] : waiting for item [10]
+# ==============================
+# expected: 0xf34b observed: 0xf34b
+# expected: 0b0    observed: 0b0
+# T=              895000 [AHB DRIVER] : waiting for item [11]
+# ==============================
+# expected: 0xe668 observed: 0xe668
+# expected: 0b0    observed: 0b0
+# T=              975000 [AHB DRIVER] : waiting for item [12]
+# ==============================
+# expected: 0xff1a observed: 0xff1a
+# expected: 0b1    observed: 0b1
+# T=             1055000 [AHB DRIVER] : waiting for item [13]
+# ==============================
+# expected: 0x46f6 observed: 0x46f6
+# expected: 0b1    observed: 0b1
+# T=             1135000 [AHB DRIVER] : waiting for item [14]
+# ==============================
+# expected: 0x3e74 observed: 0x3e74
+# expected: 0b1    observed: 0b1
+# T=             1215000 [AHB DRIVER] : waiting for item [15]
+# ==============================
+# expected: 0x729c observed: 0x729c
+# expected: 0b0    observed: 0b0
+# T=             1295000 [AHB DRIVER] : waiting for item [16]
+# ==============================
+# expected: 0x7e7b observed: 0x7e7b
+# expected: 0b0    observed: 0b0
+# T=             1375000 [AHB DRIVER] : waiting for item [17]
+# ==============================
+# expected: 0xec1e observed: 0xec1e
+# expected: 0b1    observed: 0b1
+# T=             1455000 [AHB DRIVER] : waiting for item [18]
+# ==============================
+# expected: 0xa2ef observed: 0xa2ef
+# expected: 0b0    observed: 0b0
+# T=             1535000 [AHB DRIVER] : waiting for item [19]
+# ==============================
+# expected: 0x65b2 observed: 0x65b2
+# expected: 0b0    observed: 0b0
+# T=             1615000 [AHB DRIVER] : waiting for item [20]
+# ==============================
+# expected: 0x3c03 observed: 0x3c03
+# expected: 0b0    observed: 0b0
+# ** Note: $finish    : environment.sv(61)
+#    Time: 1615 ns  Iteration: 1  Instance: /tbench_top/t1
+# End time: 16:09:16 on Nov 16,2022, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0

@@ -1,0 +1,514 @@
+m255
+K4
+z2
+13
+!s112 1.1
+!i10d 8192
+!i10e 25
+!i10f 100
+cModel Technology
+Z0 d/home/jl1719/AHB_peripherals_files
+vAHB2LED
+Z1 !s110 1670845364
+!i10b 1
+!s100 kF43m85h9T2=CC8R;oGQb3
+I1<P:ozHV^M:LWCS_@MUC81
+Z2 VDg1SIo80bB@j0V0VzS_@n1
+Z3 d/home/jl1719/nfshome/AHB_peripherals_files
+Z4 w1669390046
+8rtl/AHB_LED/AHB2LED.v
+Frtl/AHB_LED/AHB2LED.v
+L0 1
+Z5 OL;L;10.7c;67
+r1
+!s85 0
+31
+Z6 !s108 1670845364.000000
+Z7 !s107 tbench/ahblite_sys_tb.sv|rtl/CortexM0-DS/CORTEXM0INTEGRATION.v|rtl/CortexM0-DS/cortexm0ds_logic.v|rtl/AHB_LED/AHB2LED.v|rtl/AHB_VGA/vga_sync.sv|rtl/AHB_VGA/vga_image.sv|rtl/AHB_VGA/vga_console.sv|rtl/AHB_VGA/font_rom.sv|rtl/AHB_VGA/dual_port_ram_sync.sv|rtl/AHB_VGA/counter.sv|rtl/AHB_VGA/COMP.sv|rtl/AHB_VGA/AHBVGASYS_r.sv|rtl/AHB_VGA/AHBVGASYS.sv|rtl/AHB_VGA/DLS_TOP.sv|rtl/AHB_GPIO/AHBGPIO.sv|rtl/AHB_BUS/AHBMUX.v|rtl/AHB_BUS/AHBDCD.v|rtl/AHB_BRAM/AHB2BRAM.v|rtl/AHBLITE_SYS.v|
+Z8 !s90 -work|work|+acc=blnr|-noincr|-timescale|1ns/1ps|-f|ahblite_sys.vc|
+!i113 0
+Z9 o-work work +acc=blnr -timescale 1ns/1ps -L mtiAvm -L mtiRnm -L mtiOvm -L mtiUvm -L mtiUPF -L infact
+Z10 tCvgOpt 0
+n@a@h@b2@l@e@d
+vAHB2MEM
+R1
+!i10b 1
+!s100 `[BQ8N0l>D=`U5k_5i^hJ1
+I9Jd3<98OEk_hUKe7TK6z_2
+R2
+R3
+w1670495355
+8rtl/AHB_BRAM/AHB2BRAM.v
+Frtl/AHB_BRAM/AHB2BRAM.v
+L0 12
+R5
+r1
+!s85 0
+31
+R6
+R7
+R8
+!i113 0
+R9
+R10
+n@a@h@b2@m@e@m
+vAHBDCD
+R1
+!i10b 1
+!s100 =k6n<RXkjR[H@hdPNXl`m1
+I;?8o:<L:P6IYUdN7U7@KT0
+R2
+R3
+R4
+8rtl/AHB_BUS/AHBDCD.v
+Frtl/AHB_BUS/AHBDCD.v
+Z11 L0 38
+R5
+r1
+!s85 0
+31
+R6
+R7
+R8
+!i113 0
+R9
+R10
+n@a@h@b@d@c@d
+vAHBGPIO
+Z12 DXx6 sv_std 3 std 0 22 d=_JfHTnXCN[H5FjiaJJc0
+R1
+!i10b 1
+!s100 e6W2egiS7zQWNkT]7WhnL3
+IJPF3^RSAXYR_HOHUNSzVg3
+R2
+!s105 AHBGPIO_sv_unit
+S1
+R3
+R4
+8rtl/AHB_GPIO/AHBGPIO.sv
+Frtl/AHB_GPIO/AHBGPIO.sv
+R11
+R5
+r1
+!s85 0
+31
+R6
+R7
+R8
+!i113 0
+R9
+R10
+n@a@h@b@g@p@i@o
+vAHBLITE_SYS
+R1
+!i10b 1
+!s100 QQdf7RemMUAHF2zahU;@c3
+IXAX8`k@M]l8@W[^:<5H^i0
+R2
+R3
+R4
+8rtl/AHBLITE_SYS.v
+Frtl/AHBLITE_SYS.v
+R11
+R5
+r1
+!s85 0
+31
+R6
+R7
+R8
+!i113 0
+R9
+R10
+n@a@h@b@l@i@t@e_@s@y@s
+vahblite_sys_tb
+R12
+Z13 !s110 1670845365
+!i10b 1
+!s100 3S:[NIi5k44NEaBDIH4h=1
+I2PcWbI2=3N9;:GU8>zaOW1
+R2
+!s105 ahblite_sys_tb_sv_unit
+S1
+R3
+w1670496986
+8tbench/ahblite_sys_tb.sv
+Ftbench/ahblite_sys_tb.sv
+L0 3
+R5
+r1
+!s85 0
+31
+R6
+R7
+R8
+!i113 0
+R9
+R10
+vAHBMUX
+R1
+!i10b 1
+!s100 c`O@AYQ2Gnnd:CFYL_Di50
+ILV;254PQP`lWGZEXdY9b11
+R2
+R3
+R4
+8rtl/AHB_BUS/AHBMUX.v
+Frtl/AHB_BUS/AHBMUX.v
+Z14 L0 37
+R5
+r1
+!s85 0
+31
+R6
+R7
+R8
+!i113 0
+R9
+R10
+n@a@h@b@m@u@x
+vAHBVGA
+R12
+R1
+!i10b 1
+!s100 74de1k2DmZReoILhdB7hQ0
+Iid3FLXWcJzOMKa_YEmmja0
+R2
+!s105 AHBVGASYS_sv_unit
+S1
+R3
+w1670845534
+8rtl/AHB_VGA/AHBVGASYS.sv
+Frtl/AHB_VGA/AHBVGASYS.sv
+R11
+R5
+r1
+!s85 0
+31
+R6
+R7
+R8
+!i113 0
+R9
+R10
+n@a@h@b@v@g@a
+vAHBVGA_r
+R12
+R1
+!i10b 1
+!s100 fj6;?Ui[z>MT2;]]`Ihdn0
+I39KY3n8zW4RSSGJmRE7?J2
+R2
+!s105 AHBVGASYS_r_sv_unit
+S1
+R3
+w1670425316
+8rtl/AHB_VGA/AHBVGASYS_r.sv
+Frtl/AHB_VGA/AHBVGASYS_r.sv
+R11
+R5
+r1
+!s85 0
+31
+R6
+R7
+R8
+!i113 0
+R9
+R10
+n@a@h@b@v@g@a_r
+vCOMP
+R12
+R1
+!i10b 1
+!s100 EBPb454NIB;L9SW>A95ia2
+Ikhd61nMQRBPfzn`Q<CPUb2
+R2
+!s105 COMP_sv_unit
+S1
+R3
+w1669640135
+8rtl/AHB_VGA/COMP.sv
+Frtl/AHB_VGA/COMP.sv
+L0 1
+R5
+r1
+!s85 0
+31
+R6
+R7
+R8
+!i113 0
+R9
+R10
+n@c@o@m@p
+vcortexm0ds_logic
+R13
+!i10b 1
+!s100 mOgj1LnVHfM4MK^e`5UUV2
+IB1J@mL6aHe;<Q=mLP_SCK3
+R2
+R3
+R4
+8rtl/CortexM0-DS/cortexm0ds_logic.v
+Frtl/CortexM0-DS/cortexm0ds_logic.v
+L0 27
+R5
+r1
+!s85 0
+31
+R6
+R7
+R8
+!i113 0
+R9
+R10
+vCORTEXM0INTEGRATION
+R13
+!i10b 1
+!s100 WY>f<:aUc<O8DFHhaS2U;0
+IDdRC4>nT1z`?3^efGaF:Y1
+R2
+R3
+R4
+8rtl/CortexM0-DS/CORTEXM0INTEGRATION.v
+Frtl/CortexM0-DS/CORTEXM0INTEGRATION.v
+L0 29
+R5
+r1
+!s85 0
+31
+R6
+R7
+R8
+!i113 0
+R9
+R10
+n@c@o@r@t@e@x@m0@i@n@t@e@g@r@a@t@i@o@n
+vDLS_TOP
+R12
+R1
+!i10b 1
+!s100 68Tn]>b@oF@e;@950DP>z1
+Ini_8_T`XnakfM@33S[9KK0
+R2
+!s105 DLS_TOP_sv_unit
+S1
+R3
+w1669641380
+8rtl/AHB_VGA/DLS_TOP.sv
+Frtl/AHB_VGA/DLS_TOP.sv
+L0 1
+R5
+r1
+!s85 0
+31
+R6
+R7
+R8
+!i113 0
+R9
+R10
+n@d@l@s_@t@o@p
+vdual_port_ram_sync
+R12
+R1
+!i10b 1
+!s100 JNkXiGF:]5eE:Q2`kQWHM1
+IX`Te_3]8j?mb]LdEzBLAO2
+R2
+!s105 dual_port_ram_sync_sv_unit
+S1
+R3
+R4
+8rtl/AHB_VGA/dual_port_ram_sync.sv
+Frtl/AHB_VGA/dual_port_ram_sync.sv
+R14
+R5
+r1
+!s85 0
+31
+R6
+R7
+R8
+!i113 0
+R9
+R10
+vfont_rom
+R12
+R1
+!i10b 1
+!s100 zScJGFZ2YK6Y`ROcn:4aS0
+ILfNXmUSJ727o>B@I;K4AV2
+R2
+!s105 font_rom_sv_unit
+S1
+R3
+R4
+8rtl/AHB_VGA/font_rom.sv
+Frtl/AHB_VGA/font_rom.sv
+R14
+R5
+r1
+!s85 0
+31
+R6
+R7
+R8
+!i113 0
+R9
+R10
+vGenericCounter
+R12
+R1
+!i10b 1
+!s100 3e:QJUb9XOAnPZn<?gd<B1
+IiP5]Ro=8[m9mZ=;2bjkdO3
+R2
+!s105 counter_sv_unit
+S1
+R3
+R4
+8rtl/AHB_VGA/counter.sv
+Frtl/AHB_VGA/counter.sv
+R11
+R5
+r1
+!s85 0
+31
+R6
+R7
+R8
+!i113 0
+R9
+R10
+n@generic@counter
+vvga_console
+R12
+R1
+!i10b 1
+!s100 hYXWO:Zg1IkeCh[Ac:Qn>1
+I1^A7ajHn?d>=VTI[Z0kW[2
+R2
+!s105 vga_console_sv_unit
+S1
+R3
+R4
+8rtl/AHB_VGA/vga_console.sv
+Frtl/AHB_VGA/vga_console.sv
+R11
+R5
+r1
+!s85 0
+31
+R6
+R7
+R8
+!i113 0
+R9
+R10
+Yvga_if
+R12
+Z15 !s110 1669120550
+!i10b 1
+!s100 Fc<CC0EjZE:B5DgeSQT=_3
+IQOhUa@Jk18MzQ>g:OSk;Q0
+R2
+Z16 !s105 vga_top_sv_unit
+S1
+R0
+Z17 w1669047981
+Z18 8unit_tests/vga_top.sv
+Z19 Funit_tests/vga_top.sv
+L0 1
+R5
+r1
+!s85 0
+31
+Z20 !s108 1669120550.000000
+Z21 !s107 unit_tests/vga_top.sv|tbench/ahblite_sys_tb.v|rtl/CortexM0-DS/CORTEXM0INTEGRATION.v|rtl/CortexM0-DS/cortexm0ds_logic.v|rtl/AHB_LED/AHB2LED.v|rtl/AHB_VGA/DLS_TOP.sv|rtl/AHB_VGA/AHBVGASYS_r.v|rtl/AHB_VGA/COMP.v|rtl/AHB_VGA/AHBVGASYS.v|rtl/AHB_VGA/counter.v|rtl/AHB_VGA/dual_port_ram_sync.v|rtl/AHB_VGA/font_rom.v|rtl/AHB_VGA/vga_console.v|rtl/AHB_VGA/vga_image.v|rtl/AHB_VGA/vga_sync.v|rtl/AHB_GPIO/AHBGPIO.sv|rtl/AHB_BUS/AHBMUX.v|rtl/AHB_BUS/AHBDCD.v|rtl/AHB_BRAM/AHB2BRAM.v|rtl/AHBLITE_SYS.v|
+R8
+!i113 0
+R9
+R10
+vvga_image
+R12
+R1
+!i10b 1
+!s100 <^dn]HEWD_<akT8CTWMZT3
+I_oU;J1of:OYHo0;]8LKil3
+R2
+!s105 vga_image_sv_unit
+S1
+R3
+R4
+8rtl/AHB_VGA/vga_image.sv
+Frtl/AHB_VGA/vga_image.sv
+R11
+R5
+r1
+!s85 0
+31
+R6
+R7
+R8
+!i113 0
+R9
+R10
+vvga_top
+R12
+R15
+!i10b 1
+!s100 R]?KnBT[NK`1n02IIMR5d0
+I`3ZcH4Yh^C_T=KTI5BK[73
+R2
+R16
+S1
+R0
+R17
+R18
+R19
+L0 62
+R5
+r1
+!s85 0
+31
+R20
+R21
+R8
+!i113 0
+R9
+R10
+vVGAInterface
+R12
+R1
+!i10b 1
+!s100 CLL^F<0_9_64H<aGEGV?b2
+InN0Kg9nf9FDOQMjN9YfjE1
+R2
+!s105 vga_sync_sv_unit
+S1
+R3
+w1669633754
+8rtl/AHB_VGA/vga_sync.sv
+Frtl/AHB_VGA/vga_sync.sv
+R14
+R5
+r1
+!s85 0
+31
+R6
+R7
+R8
+!i113 0
+R9
+R10
+n@v@g@a@interface
+Twork_opt
+R13
+VH_TVCn>NSPjO]aVYYQieX3
+04 14 4 work ahblite_sys_tb fast 0
+o-work work
+R10
+nwork_opt
+OL;O;10.7c;67

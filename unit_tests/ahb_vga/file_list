@@ -1,0 +1,9 @@
+/home/jl1719/nfshome/AHB_peripherals_files/rtl/AHB_VGA/AHBVGASYS.sv  
+/home/jl1719/nfshome/AHB_peripherals_files/rtl/AHB_VGA/vga_sync.sv 
+/home/jl1719/nfshome/AHB_peripherals_files/rtl/AHB_VGA/vga_console.sv 
+/home/jl1719/nfshome/AHB_peripherals_files/rtl/AHB_VGA/vga_image.sv 
+/home/jl1719/nfshome/AHB_peripherals_files/rtl/AHB_VGA/counter.sv 
+/home/jl1719/nfshome/AHB_peripherals_files/rtl/AHB_VGA/dual_port_ram_sync.sv 
+/home/jl1719/nfshome/AHB_peripherals_files/rtl/AHB_VGA/font_rom.sv
+vga_tb.sv
+vga_top.sv

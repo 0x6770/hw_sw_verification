@@ -1,0 +1,66 @@
+# Reading pref.tcl
+# //  Questa Sim-64
+# //  Version 10.7c linux_x86_64 Aug 17 2018
+# //
+# //  Copyright 1991-2018 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  QuestaSim and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# vsim work_opt -gui 
+# Start time: 11:43:03 on Dec 12,2022
+# Loading sv_std.std
+# Loading work.ahblite_sys_tb(fast)
+# Loading work.AHBLITE_SYS(fast)
+# Loading work.CORTEXM0INTEGRATION(fast)
+# Loading work.cortexm0ds_logic(fast)
+# Loading work.AHBDCD(fast)
+# Loading work.AHBMUX(fast)
+# Loading work.AHB2MEM(fast)
+# Loading work.AHBVGA(fast)
+# Loading work.VGAInterface(fast)
+# Loading work.GenericCounter(fast)
+# Loading work.GenericCounter(fast__1)
+# Loading work.GenericCounter(fast__2)
+# Loading work.vga_console(fast)
+# Loading work.font_rom(fast)
+# Loading work.dual_port_ram_sync(fast)
+# Loading work.vga_image(fast)
+# Loading work.dual_port_ram_sync(fast__1)
+# Loading work.AHBGPIO(fast)
+# Loading work.AHB2LED(fast)
+# ** Warning: (vsim-3015) [PCDPC] - Port size (16) does not match connection size (14) for port 'address'. The port definition is at: rtl/AHB_VGA/vga_image.sv(45).
+#    Time: 0 ps  Iteration: 0  Instance: /ahblite_sys_tb/dut/uAHBVGA/uvga_image File: rtl/AHB_VGA/AHBVGASYS.sv Line: 121
+# ** Warning: (vsim-3015) [PCDPC] - Port size (15) does not match connection size (16) for port 'addr_b'. The port definition is at: rtl/AHB_VGA/dual_port_ram_sync.sv(46).
+#    Time: 0 ps  Iteration: 0  Instance: /ahblite_sys_tb/dut/uAHBVGA/uvga_image/uimage_ram File: rtl/AHB_VGA/vga_image.sv Line: 67
+# ** Warning: (vsim-3015) [PCDPC] - Port size (17) does not match connection size (16) for port 'GPIOIN'. The port definition is at: rtl/AHB_GPIO/AHBGPIO.sv(50).
+#    Time: 0 ps  Iteration: 0  Instance: /ahblite_sys_tb/dut/uAHBGPIO File: rtl/AHBLITE_SYS.v Line: 332
+# ** Warning: (vsim-3015) [PCDPC] - Port size (17) does not match connection size (8) for port 'GPIOOUT'. The port definition is at: rtl/AHB_GPIO/AHBGPIO.sv(56).
+#    Time: 0 ps  Iteration: 0  Instance: /ahblite_sys_tb/dut/uAHBGPIO File: rtl/AHBLITE_SYS.v Line: 332
+# ** Warning: (vsim-3015) [PCDPC] - Port size (32) does not match connection size (1) for port 'HRDATA'. The port definition is at: rtl/AHB_LED/AHB2LED.v(18).
+#    Time: 0 ps  Iteration: 0  Instance: /ahblite_sys_tb/dut/uAHB2LED File: rtl/AHBLITE_SYS.v Line: 350
+add wave -position insertpoint sim:/ahblite_sys_tb/dut/uAHBVGA/*
+log -r \*
+run 16000000na
+# Invalid time value: 16000000na
+run 16000000ns
+# ** Error: Assertion error.
+#    Time: 1063255 ns Started: 1063255 ns  Scope: ahblite_sys_tb.dut.uAHBVGA.assert_px_rgb File: rtl/AHB_VGA/AHBVGASYS.sv Line: 208
+# ** Error: Assertion error.
+#    Time: 1063275 ns Started: 1063275 ns  Scope: ahblite_sys_tb.dut.uAHBVGA.assert_px_rgb File: rtl/AHB_VGA/AHBVGASYS.sv Line: 208
+# ** Error: Assertion error.
+#    Time: 1095295 ns Started: 1095295 ns  Scope: ahblite_sys_tb.dut.uAHBVGA.assert_px_rgb File: rtl/AHB_VGA/AHBVGASYS.sv Line: 208
+# ** Error: Assertion error.
+#    Time: 1095315 ns Started: 1095315 ns  Scope: ahblite_sys_tb.dut.uAHBVGA.assert_px_rgb File: rtl/AHB_VGA/AHBVGASYS.sv Line: 208
+# ** Error: Assertion error.
+#    Time: 1127335 ns Started: 1127335 ns  Scope: ahblite_sys_tb.dut.uAHBVGA.assert_px_rgb File: rtl/AHB_VGA/AHBVGASYS.sv Line: 208
+# ** Error: Assertion error.
+#    Time: 1127355 ns Started: 1127355 ns  Scope: ahblite_sys_tb.dut.uAHBVGA.assert_px_rgb File: rtl/AHB_VGA/AHBVGASYS.sv Line: 208
+coverage report -html -htmldir covhtmlreport -assert -directive -cvg -code bcefst -threshL 50 -threshH 90
+# Report created in covhtmlreport/index.html

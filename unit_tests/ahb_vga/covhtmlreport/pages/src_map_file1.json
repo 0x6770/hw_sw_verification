@@ -1,0 +1,13 @@
+var g_data = {'dummy':null,
+'4':'../../rtl/AHB_VGA/AHBVGASYS.sv',
+'10':'../../rtl/AHB_VGA/AHBVGASYS_r.sv',
+'11':'../../rtl/AHB_VGA/COMP.sv',
+'9':'../../rtl/AHB_VGA/DLS_TOP.sv',
+'2':'../../rtl/AHB_VGA/counter.sv',
+'7':'../../rtl/AHB_VGA/dual_port_ram_sync.sv',
+'5':'../../rtl/AHB_VGA/font_rom.sv',
+'6':'../../rtl/AHB_VGA/vga_console.sv',
+'8':'../../rtl/AHB_VGA/vga_image.sv',
+'3':'../../rtl/AHB_VGA/vga_sync.sv',
+'12':'vga_tb.sv',
+'1':'vga_top.sv'};
