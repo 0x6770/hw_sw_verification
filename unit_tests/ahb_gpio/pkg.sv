@@ -45,7 +45,7 @@ package pkg;
 `endif
         assert (expected_item.data === item.data);
         assert (expected_item.parity === (err_vif.error ? ~item.parity : item.parity));
-        assert (err_vif.error == gpio_vif.PARITYERR);
+        assert (err_vif.error === gpio_vif.PARITYERR);
         num_items_observed++;
       end
     endtask

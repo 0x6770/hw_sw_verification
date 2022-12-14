@@ -93,9 +93,46 @@ package ahb_pkg;
       vif.size  <= 3'b010;
       vif.trans <= 2'b10;
       vif.ready <= 1'b1;
+      vif.wdata <=  'b0;
       @(posedge vif.clk);  // r/w mode configuration taks 2 cycles
       vif.sel   <= 1'b0;
-      vif.wdata <= write ? 16'h0001 : 16'h0000;
+      vif.addr  <=  'b0;
+      vif.write <= 1'b0;
+      vif.size  <= 3'b0;
+      vif.trans <= 2'b0;
+      vif.wdata <= write ? 16'h1 : 16'h0;
+    endtask
+
+    task write_data(transaction item);
+      @(posedge vif.clk);
+      vif.sel   <= 1'b1;
+      vif.addr  <= AHB_DATA_ADDR;
+      vif.write <= 1'b1;
+      vif.size  <= 3'b010;
+      vif.trans <= 2'b10;
+      vif.wdata[15:0] <= item.data;
+      vif.ready <= 1'b1;
+
+      @(posedge vif.clk);
+      while (!vif.readyout) begin
+        $display("T=%t [AHB DRIVER] : waiting until readyout is asserted", $time);
+        @(posedge vif.clk);
+      end
+
+      vif.sel   <= 1'b0;
+      vif.write <= 1'b0;
+      // vif.wdata <= '0;
+    endtask
+
+    task read_data();
+      @(posedge vif.clk);
+      vif.sel       <= 1'b1;
+      vif.addr      <= AHB_DATA_ADDR;
+      vif.write     <= 1'b0;
+      // err_vif.error <= $urandom_range(0, 1);
+      err_vif.error <= 1;
+
+      @(posedge vif.clk);
     endtask
 
     task run();
@@ -104,59 +141,25 @@ package ahb_pkg;
 
       forever begin
         if (write) begin
-          // $display("========================================");
-          // $display("write");
           transaction item;
-          vif.sel   <= 1'b0;
-          vif.write <= 1'b0;
-
           $display("T=%t [AHB DRIVER] : waiting for item [%0d]", $time, num_items_received);
           drv_box.get(item);
 `ifdef DEBUG
           item.display("AHB DRIVER");
 `endif
+          err_vif.error <= 0;
+          vif.sel       <= 1'b0;
+          
           // TODO: no need to reprogram GPIO if last mode is write
           // set GPIO to write mode regardless the last mode
           switch_mode(1);
+          write_data(item);
 
-          @(posedge vif.clk);
-          vif.sel   <= 1'b1;
-          vif.addr  <= AHB_DATA_ADDR;
-          vif.write <= 1'b1;
-          vif.size  <= 3'b010;
-          vif.trans <= 2'b10;
-          vif.wdata <= item.data;
-          vif.ready <= 1'b1;
-
-          @(posedge vif.clk);
-          while (!vif.readyout) begin
-            $display("T=%t [AHB DRIVER] : waiting until readyout is asserted", $time);
-            @(posedge vif.clk);
-          end
-
-          vif.sel   <= 1'b0;
-          vif.write <= 1'b0;
         end else begin
-          // $display("========================================");
-          // $display("read");
-          err_vif.error = $urandom_range(0, 1);
           switch_mode(0);
-          // error <= 1;
-
-          @(posedge vif.clk);
-          vif.sel   <= 1'b1;
-          vif.addr  <= AHB_DATA_ADDR;
-          vif.write <= 1'b0;
-
-          @(posedge vif.clk);
-          // vif.sel   <= 1'b0;
-          // vif.write <= 1'b0;
-
-          // TODO:
+          read_data();
           num_items_received++;
-          err_vif.error = 0;
         end
-
         // Alternating reads and writes
         write++;
       end
@@ -189,7 +192,7 @@ package ahb_pkg;
             item.parity_sel = parity_sel;
             item.calc_parity();
 `ifdef DEBUG
-            item.display("AHBMONITOR WRITE ");
+            item.display("AHBMONITOR WRITE");
 `endif
             scb_expected_box.put(item);
           end else begin
@@ -198,7 +201,7 @@ package ahb_pkg;
             item.parity_sel = parity_sel;
             item.parity     = vif.rdata[16];
 `ifdef DEBUG
-            item.display("AHBMONITOR READ ");
+            item.display("AHBMONITOR READ");
 `endif
             scb_observed_box.put(item);
           end

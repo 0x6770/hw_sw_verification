@@ -116,7 +116,7 @@ module AHBGPIO #(
     else if (gpio_dir == 16'h0001) gpio_datain <= GPIOOUT;
   end
 
-  assign HRDATA[16:0] = gpio_datain;
+  assign HRDATA  = {15'b0, gpio_datain};
   assign GPIOOUT = {parity(gpio_dataout, PARITYSEL), gpio_dataout};
   // Parity
   // assign PARITYERR = parity_err;

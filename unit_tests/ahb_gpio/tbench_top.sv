@@ -59,11 +59,11 @@ module tbench_top;
   );
 
   loopback u0 (
-      .clk    (ahb_if.clk),
-      .reset_n(ahb_if.reset_n),
-      .GPIOIN (gpio_if.GPIOIN),
-      .GPIOOUT(gpio_if.GPIOOUT),
-      .error  (err_if.error)
+      .clk      (ahb_if.clk),
+      .reset_n  (ahb_if.reset_n),
+      .error_i  (err_if.error),
+      .GPIOOUT_i(gpio_if.GPIOOUT),
+      .GPIOIN_o (gpio_if.GPIOIN)
   );
 
   //enabling the wave dump
