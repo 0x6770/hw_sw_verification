@@ -141,7 +141,8 @@ module AHBGPIO #(
   always_comb TURN = (last_HADDR[7:0] == GPIO_DIR_ADDR) & last_HSEL & last_HWRITE & last_HTRANS[1];
 
   // Assume addresses for DIR and DATA are different
-  assume property (@(posedge HCLK) disable iff (!HRESETn) GPIO_DIR_ADDR !== GPIO_DATA_ADDR);
+  asm_GPIO_DIR_ADDR_and_GPIO_DATA_ADDR_different:
+    assume property (@(posedge HCLK) disable iff (!HRESETn) GPIO_DIR_ADDR !== GPIO_DATA_ADDR);
 
   // Assertions for PARITYERR
   ast_PARITYERR_is_only_affected_by_PARITYSEL_GPIOIN_GPIOOUT_HRDATA:

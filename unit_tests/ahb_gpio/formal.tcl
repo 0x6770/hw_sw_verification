@@ -1,6 +1,6 @@
 clear -all
 analyze -clear
-analyze -sv ../../../rtl/AHB_GPIO/AHBGPIO.sv
+analyze -sv ../../rtl/AHB_GPIO/AHBGPIO.sv
 elaborate -top AHBGPIO
 
 # setup clocks and resets

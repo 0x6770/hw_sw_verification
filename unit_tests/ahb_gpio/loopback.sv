@@ -2,8 +2,8 @@ module loopback (
     input clk,
     input reset_n,
     input bit error, // control whether flip parity bit at output
-    input logic [16:0] GPIO_OUT,
-    output logic [16:0] GPIO_IN
+    input logic [16:0] GPIOOUT,
+    output logic [16:0] GPIOIN
 );
   logic [16:0] temp;
 
@@ -12,10 +12,10 @@ module loopback (
       temp <= 'h0;
     end else begin
       // $display("loopback GPIOOUT: %h", GPIO_OUT);
-      temp <= GPIO_OUT;
+      temp <= GPIOOUT;
     end
   end
 
-  assign GPIO_IN = {error ? ~temp[16] : temp[16], temp[15:0]};
+  assign GPIOIN = {error ? ~temp[16] : temp[16], temp[15:0]};
 
 endmodule
