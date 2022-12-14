@@ -42,7 +42,7 @@ package pkg;
           .scb_expected_box(scb_expected_box),
           .parity_sel(this.gpio_vif.PARITY_SEL)
       );
-      scoreboard = new(.scb_observed_box(scb_observed_box), .scb_expected_box(scb_expected_box), .err_vif(err_vif));
+      scoreboard = new(.scb_observed_box(scb_observed_box), .scb_expected_box(scb_expected_box), .err_vif(err_vif), .gpio_vif(gpio_vif));
     endfunction : new
 
     task pre_test();

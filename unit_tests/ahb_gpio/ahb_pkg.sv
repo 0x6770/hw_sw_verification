@@ -139,8 +139,8 @@ package ahb_pkg;
         end else begin
           // $display("========================================");
           // $display("read");
+          err_vif.error = $urandom_range(0, 1);
           switch_mode(0);
-          err_vif.error <= $urandom_range(0, 1);
           // error <= 1;
 
           @(posedge vif.clk);
@@ -154,6 +154,7 @@ package ahb_pkg;
 
           // TODO:
           num_items_received++;
+          err_vif.error = 0;
         end
 
         // Alternating reads and writes
@@ -213,14 +214,16 @@ package ahb_pkg;
     mailbox scb_expected_box;
     mailbox scb_observed_box;
     virtual err_if err_vif;
+    virtual gpio_if gpio_vif;
 
     transaction expected_queue[$];
 
     int num_items_observed = 0;
 
-    function new(mailbox scb_expected_box, mailbox scb_observed_box, virtual err_if err_vif);
+    function new(mailbox scb_expected_box, mailbox scb_observed_box, virtual err_if err_vif, virtual gpio_if gpio_vif);
       this.scb_expected_box = scb_expected_box;
       this.scb_observed_box = scb_observed_box;
+      this.gpio_vif         = gpio_vif;
       this.err_vif          = err_vif;
     endfunction
 
@@ -250,7 +253,7 @@ package ahb_pkg;
 `endif
         assert (expected_item.data === item.data);
         assert (expected_item.parity === (err_vif.error ? ~item.parity : item.parity));
-        // assert (expected_item.parity === item.parity);
+        assert (err_vif.error == gpio_vif.PARITY_ERR);
         num_items_observed++;
       end
     endtask

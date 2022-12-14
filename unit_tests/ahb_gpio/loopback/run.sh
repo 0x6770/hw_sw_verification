@@ -19,5 +19,5 @@ vlog -work work \
      # +define+DEBUG
 vopt -work work tbench_top -o work_opt
 vsim work_opt \
-     -do run_test.tcl \
+     -do vsim.tcl \
      -coverage -c
