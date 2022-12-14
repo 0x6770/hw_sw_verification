@@ -2,14 +2,17 @@ package pkg;
 
   class environment;
     // instantiate driver, monitor, scoreboard and generator
-    ahb_pkg::monitor    monitor;
+    ahb_pkg::monitor    ahb_monitor;
+    gpio_pkg::monitor   gpio_monitor;
     ahb_pkg::driver     driver;
     ahb_pkg::scoreboard scoreboard;
     ahb_pkg::generator  generator;
 
     mailbox             drv_box;
-    mailbox             scb_expected_box;
-    mailbox             scb_observed_box;
+    mailbox             scb_ahb_expected_box;
+    mailbox             scb_ahb_observed_box;
+    mailbox             scb_gpio_expected_box;
+    mailbox             scb_gpio_observed_box;
     int                 num_transactions;
 
     // create event to indicate completion of transaction generation
@@ -27,25 +30,31 @@ package pkg;
       this.ahb_vif = ahb_vif;
       this.gpio_vif = gpio_vif;
       this.num_transactions = num_transactions;
-      this.gpio_vif.PARITY_SEL = $urandom() % 2 == 1;
+      this.gpio_vif.PARITYSEL = $urandom() % 2 == 1;
       this.err_vif = err_vif;
 
       // initialise mailbox
       drv_box = new();
-      scb_expected_box = new();
-      scb_observed_box = new();
+      scb_ahb_expected_box = new();
+      scb_ahb_observed_box = new();
+      scb_gpio_expected_box = new();
+      scb_gpio_observed_box = new();
       // initialise testbench components
       generator = new(.box(drv_box), .cnt(num_transactions), .finished(gen_finished));
       driver = new(.vif(ahb_vif), .drv_box(drv_box), .err_vif(err_vif));
-      monitor = new(
+      ahb_monitor = new(
           .vif(ahb_vif),
-          .scb_observed_box(scb_observed_box),
-          .scb_expected_box(scb_expected_box),
-          .parity_sel(this.gpio_vif.PARITY_SEL)
+          .scb_observed_box(scb_ahb_observed_box),
+          .scb_expected_box(scb_ahb_expected_box),
+          .parity_sel(this.gpio_vif.PARITYSEL)
       );
+      gpio_monitor = new(
+          .vif(gpio_vif),
+          .scb_observed_box(scb_gpio_observed_box)
+      );  
       scoreboard = new(
-          .scb_observed_box(scb_observed_box),
-          .scb_expected_box(scb_expected_box),
+          .scb_observed_box(scb_ahb_observed_box),
+          .scb_expected_box(scb_ahb_expected_box),
           .err_vif(err_vif),
           .gpio_vif(gpio_vif)
       );
@@ -59,7 +68,7 @@ package pkg;
       fork
         generator.run();
         driver.run();
-        monitor.run();
+        ahb_monitor.run();
         scoreboard.run();
       join_any
     endtask : test

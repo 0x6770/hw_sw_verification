@@ -2,33 +2,24 @@ package gpio_pkg;
 
   // Transaction for GPIO
   class transaction;
-    static int        count        = 0;
-    int               id;
-
     rand logic [15:0] data;
     rand logic        parity;
-    rand logic        parity_sel;
     logic             real_parity;
-
-    covergroup GPIOGroup;
-      coverpoint gpio_datain;
-      coverpoint gpio_dataout;
-    endgroup
 
     function void display(string tag = "");
       $display("T=%t [%s]", $time, tag);
-      $display("id:          %h", id);
       $display("data:        %h", data);
       $display("parity:      %h", parity);
-      $display("parity_sel:  %h", parity_sel);
       $display("real_parity: %h", real_parity);
     endfunction : display
 
     // constructor
     function new();
-      id = count++;
-      real_parity = parity_sel ? ~(^data) : ^data;
     endfunction : new
+
+    function void calc_parity(PARITYSEL);
+      real_parity = PARITYSEL ? ~(^data) : ^data;
+    endfunction
 
   endclass : transaction
 
@@ -44,13 +35,13 @@ package gpio_pkg;
 
     task reset();
       wait (!vif.reset_n);
-      vif.DATA_IN <= 'h0;
+      vif.GPIOIN <= 'h0;
       wait (vif.reset_n);
     endtask
 
     task update(transaction item);
       @(posedge vif.clk);
-      vif.DATA_IN <= item.data;
+      vif.GPIOIN <= item.data;
       num_items_received++;
     endtask
 
@@ -58,13 +49,23 @@ package gpio_pkg;
 
   class monitor;
     virtual gpio_if vif;
-    mailbox scb_observed_box;
+    mailbox         scb_observed_box;
 
-    function new(mailbox scb_observed_box);
+    function new(virtual gpio_if vif, mailbox scb_observed_box);
+      this.vif              = vif;
       this.scb_observed_box = scb_observed_box;
     endfunction
 
     task run();
+      forever begin
+        @(posedge vif.clk);
+        begin
+          transaction item = new();
+          item.data   = vif.GPIOOUT[15:0];
+          item.parity = vif.GPIOOUT[16];
+          item.calc_parity(vif.PARITYSEL);
+        end
+      end
     endtask
   endclass
 

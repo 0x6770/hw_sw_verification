@@ -2,6 +2,7 @@
 ahb_interface.sv
 gpio_interface.sv
 ahb_pkg.sv
+gpio_pkg.sv
 pkg.sv
 loopback.sv
 test.sv

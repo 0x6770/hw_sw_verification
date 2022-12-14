@@ -51,18 +51,18 @@ module tbench_top;
       .HWDATA   (ahb_if.wdata),
       .HRDATA   (ahb_if.rdata),
       // GPIO I/O
-      .GPIOIN   (gpio_if.GPIO_IN),
-      .GPIOOUT  (gpio_if.GPIO_OUT),
+      .GPIOIN   (gpio_if.GPIOIN),
+      .GPIOOUT  (gpio_if.GPIOOUT),
       // parity
-      .PARITYERR(gpio_if.PARITY_ERR),
-      .PARITYSEL(gpio_if.PARITY_SEL)   // 1'b1 ? odd parity : even parity
+      .PARITYERR(gpio_if.PARITYERR),
+      .PARITYSEL(gpio_if.PARITYSEL)   // 1'b1 ? odd parity : even parity
   );
 
   loopback u0 (
       .clk    (ahb_if.clk),
       .reset_n(ahb_if.reset_n),
-      .GPIOIN (gpio_if.GPIO_IN),
-      .GPIOOUT(gpio_if.GPIO_OUT),
+      .GPIOIN (gpio_if.GPIOIN),
+      .GPIOOUT(gpio_if.GPIOOUT),
       .error  (err_if.error)
   );
 

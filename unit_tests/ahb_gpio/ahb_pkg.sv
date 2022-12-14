@@ -170,8 +170,7 @@ package ahb_pkg;
     mailbox        scb_expected_box;
     bit            parity_sel;
 
-    function new(virtual ahb_if vif, mailbox scb_observed_box, mailbox scb_expected_box,
-                 bit parity_sel);
+    function new(virtual ahb_if vif, mailbox scb_observed_box, mailbox scb_expected_box, bit parity_sel);
       this.vif              = vif;
       this.scb_observed_box = scb_observed_box;
       this.scb_expected_box = scb_expected_box;
@@ -254,7 +253,7 @@ package ahb_pkg;
 `endif
         assert (expected_item.data === item.data);
         assert (expected_item.parity === (err_vif.error ? ~item.parity : item.parity));
-        assert (err_vif.error == gpio_vif.PARITY_ERR);
+        assert (err_vif.error == gpio_vif.PARITYERR);
         num_items_observed++;
       end
     endtask
