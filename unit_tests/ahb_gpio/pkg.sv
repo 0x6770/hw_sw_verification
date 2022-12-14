@@ -1,12 +1,70 @@
 package pkg;
 
+  // Scoreboard
+  class scoreboard;
+    mailbox scb_expected_box;
+    mailbox scb_observed_box;
+    virtual err_if err_vif;
+    virtual gpio_if gpio_vif;
+
+    ahb_pkg::transaction expected_queue[$];
+
+    int num_items_observed = 0;
+
+    function new(mailbox scb_expected_box, mailbox scb_observed_box, virtual err_if err_vif,
+                 virtual gpio_if gpio_vif);
+      this.scb_expected_box = scb_expected_box;
+      this.scb_observed_box = scb_observed_box;
+      this.gpio_vif         = gpio_vif;
+      this.err_vif          = err_vif;
+    endfunction
+
+    task receive_expected_items();
+      forever begin
+        ahb_pkg::transaction item;
+        scb_expected_box.get(item);
+`ifdef DEBUG
+        item.display("SCOREBOARD");
+`endif
+        expected_queue.push_back(item);
+      end
+    endtask
+
+    task receive_observed_items();
+      forever begin
+        ahb_pkg::transaction item, expected_item;
+        scb_observed_box.get(item);
+        expected_item = expected_queue.pop_front();
+        $display("============================== [%d]", num_items_observed);
+        $display("expected:   0x%4h observed:   0x%4h", expected_item.data, item.data);
+        $display("expected:   0b%h    observed:   0b%h", expected_item.parity, item.parity);
+        $display("parity_sel: 0b%h    parity_sel: 0b%h", expected_item.parity_sel, item.parity_sel);
+`ifdef DEBUG
+        item.display("SCOREBOARD");
+        expected_item.display("SCOREBOARD");
+`endif
+        assert (expected_item.data === item.data);
+        assert (expected_item.parity === (err_vif.error ? ~item.parity : item.parity));
+        assert (err_vif.error == gpio_vif.PARITYERR);
+        num_items_observed++;
+      end
+    endtask
+
+    task run();
+      fork
+        receive_observed_items();
+        receive_expected_items();
+      join
+    endtask
+  endclass : scoreboard
+
   class environment;
     // instantiate driver, monitor, scoreboard and generator
     ahb_pkg::monitor    ahb_monitor;
-    gpio_pkg::monitor   gpio_monitor;
     ahb_pkg::driver     driver;
-    ahb_pkg::scoreboard scoreboard;
     ahb_pkg::generator  generator;
+    gpio_pkg::monitor   gpio_monitor;
+    scoreboard scoreboard;
 
     mailbox             drv_box;
     mailbox             scb_ahb_expected_box;
