@@ -13,12 +13,8 @@ program test #(
   initial begin
     $display("[TEST] : start testing");
     // creating environment
-    env = new(
-        .ahb_vif(ahb_if),
-        .gpio_vif(gpio_if),
-        .err_vif(err_if),
-        .num_transactions(NUM_TRANSACTIONS)
-    );
+    env = new(.ahb_vif(ahb_if), .gpio_vif(gpio_if), .err_vif(err_if), .num_transactions(
+              NUM_TRANSACTIONS));
 
     env.run();
   end

@@ -59,8 +59,8 @@ package ahb_pkg;
     virtual err_if err_vif;
     mailbox        drv_box;
     // mailbox scb_expected_box;
-    int num_items_received = 0;
-    bit write = 1;
+    int            num_items_received = 0;
+    bit            write              = 1;
 
     // constructor
     function new(virtual ahb_if vif, virtual err_if err_vif, mailbox drv_box);
@@ -220,7 +220,8 @@ package ahb_pkg;
 
     int num_items_observed = 0;
 
-    function new(mailbox scb_expected_box, mailbox scb_observed_box, virtual err_if err_vif, virtual gpio_if gpio_vif);
+    function new(mailbox scb_expected_box, mailbox scb_observed_box, virtual err_if err_vif,
+                 virtual gpio_if gpio_vif);
       this.scb_expected_box = scb_expected_box;
       this.scb_observed_box = scb_observed_box;
       this.gpio_vif         = gpio_vif;

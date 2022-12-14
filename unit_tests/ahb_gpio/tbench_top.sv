@@ -18,12 +18,12 @@ module tbench_top;
   end
 
   //creatinng instance of interface, inorder to connect DUT and testcase
-  ahb_if  ahb_if (
+  ahb_if ahb_if (
       .clk    (clk),
       .reset_n(reset_n)
   );
   gpio_if gpio_if ();
-  err_if  err_if ();
+  err_if err_if ();
 
   //Testcase instance, interface handle is passed to test as an argument
   test #(

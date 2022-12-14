@@ -1,7 +1,7 @@
 module loopback (
     input clk,
     input reset_n,
-    input bit error, // control whether flip parity bit at output
+    input bit error,  // control whether flip parity bit at output
     input logic [16:0] GPIOOUT,
     output logic [16:0] GPIOIN
 );
