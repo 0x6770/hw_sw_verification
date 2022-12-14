@@ -148,7 +148,7 @@ module AHBGPIO #(
   ast_PARITYERR_is_only_affected_by_PARITYSEL_GPIOIN_GPIOOUT_HRDATA:
     `ASSERT(($stable(GPIOIN) && $stable(GPIOOUT) && !TURN)[*2] |=> $stable(PARITYSEL) |-> $stable(PARITYERR));
   ast_PARITYERR_always_eq_parity_bit:
-    `ASSERT(PARITYERR === (HRDATA[16] !== parity(HRDATA[15:0], PARITYSEL)));
+    `ASSERT(PARITYERR === (HRDATA[16] !== (PARITYSEL ? ~^HRDATA[15:0] : ^HRDATA[15:0])));
 
   // Assertions for GPIOOUT
   ast_GPIOOUT_parity_generation:
@@ -171,13 +171,13 @@ module AHBGPIO #(
     `ASSERT(TURN |=> gpio_dir === $past(HWDATA[15:0]));
 
   ast_last_HADDR_eq_past_HADDR:
-  `ASSERT(HREADY |=> last_HADDR  == $past(HADDR));
+  `ASSERT(HREADY |=> last_HADDR  === $past(HADDR));
   ast_last_HTRANS_eq_past_HTRANS:
-  `ASSERT(HREADY |=> last_HTRANS == $past(HTRANS));
+  `ASSERT(HREADY |=> last_HTRANS === $past(HTRANS));
   ast_last_HWRITE_eq_past_HWRITE:
-  `ASSERT(HREADY |=> last_HWRITE == $past(HWRITE));
+  `ASSERT(HREADY |=> last_HWRITE === $past(HWRITE));
   ast_last_HSEL_eq_past_HSEL:
-  `ASSERT(HREADY |=> last_HSEL   == $past(HSEL));
+  `ASSERT(HREADY |=> last_HSEL   === $past(HSEL));
 
   cov_PARITYERR_hi: `COVER(PARITYERR === 1'b1);
   cov_PARITYERR_lo: `COVER(PARITYERR === 1'b0);
