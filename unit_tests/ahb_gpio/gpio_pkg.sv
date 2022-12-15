@@ -71,23 +71,19 @@ package gpio_pkg;
       wait (vif.reset_n);
     endtask
 
-    task write(transaction item);
-      @(posedge vif.clk);
-      vif.GPIOIN <= {item.parity, item.data};
-      num_items_received++;
-    endtask
-
     task run();
+      transaction item;
       @(posedge vif.clk);
       $display("T=%t [GPIO DRIVER] : starting", $time);
       
       forever begin
-        transaction item;
         $display("T=%t [GPIO DRIVER] : waiting for item [%0d]", $time, num_items_received);
         drv_box.get(item);
         item.parity = vif.PARITYSEL ? ~^item.data : ^ item.data;
-        write(item);
+        @(posedge vif.clk);
+        vif.GPIOIN <= {item.parity, item.data};
         ->data_written;
+        num_items_received++;
       end
     endtask;
   endclass : driver
@@ -105,9 +101,10 @@ package gpio_pkg;
 
     task run();
       transaction item;
+      $display("T=%t data_written", $time);
       forever begin
         @(data_written);
-        // @(posedge vif.clk);
+        @(negedge vif.clk);
         item            = new();
         item.data       = vif.GPIOIN[15:0];
         item.parity     = vif.GPIOIN[16];

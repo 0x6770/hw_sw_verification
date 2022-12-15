@@ -211,6 +211,7 @@ package ahb_pkg;
 
       forever begin
         @(data_written);
+        @(posedge vif.clk);
         item             = new();
         item.data        = vif.rdata[15:0];
         item.parity      = vif.rdata[16];

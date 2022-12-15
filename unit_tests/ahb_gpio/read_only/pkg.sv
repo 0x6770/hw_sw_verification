@@ -115,7 +115,7 @@ package pkg;
         gpio_driver.reset();
       join_any
       // change GPIO to read mode
-      ahb_driver.switch_mode(0);
+      // ahb_driver.switch_mode(0);
     endtask : pre_test
 
     task test();
