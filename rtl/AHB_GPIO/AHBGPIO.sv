@@ -156,8 +156,10 @@ module AHBGPIO #(
   ast_HRDATA_data_part_only_changes_if_gpio_dir_0_or_1:    
     `ASSERT((gpio_dir !== 16'b1) && (gpio_dir !== 16'b0) |=> $stable(HRDATA[16:0]));
   
-  ast_gpio_data_out_eq_past_HWDATA_when_WRITE:
+  ast_gpio_dataout_eq_past_HWDATA_when_WRITE:
     `ASSERT(WRITE |=> gpio_dataout === $past(HWDATA[15:0]));
+  ast_gpio_dataout_stays_the_same_when_not_WRITE:
+    `ASSERT(!WRITE |=> $stable(gpio_dataout));
 
   ast_gpio_dir_eq_past_HWDATA_when_TURN:
     `ASSERT(TURN |=> gpio_dir === $past(HWDATA[15:0]));

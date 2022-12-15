@@ -91,7 +91,6 @@ package pkg;
       // initialise testbench components
       ahb_generator         = new(.box(ahb_drv_box), .cnt(num_transactions), .finished(gen_finished));
       ahb_driver            = new(.vif( ahb_vif.driver), .drv_box( ahb_drv_box), .err_vif(err_vif));
-      gpio_driver           = new(.vif(gpio_vif.driver), .drv_box(gpio_drv_box), .err_vif(err_vif));
       ahb_wdata_monitor = new(
         .vif(ahb_vif),
         .scb_box(ahb_scb_expected_box),
@@ -115,7 +114,6 @@ package pkg;
     task pre_test();
       fork
         ahb_driver.reset();
-        gpio_driver.reset();
       join_any
 
       ahb_driver.switch_mode(1);
