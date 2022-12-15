@@ -22,17 +22,45 @@ package gpio_pkg;
     function void calc_parity();
       real_parity = parity_sel ? ~(^data) : ^data;
     endfunction
-
   endclass : transaction
+
+  class generator;
+    rand transaction item;
+    mailbox drv_box;      // send items to driver
+    int repeat_cnt = 10;  // generate 10 transactions by default
+    event finished;
+
+    // constructor
+    function new(mailbox box, int cnt, event finished);
+      this.drv_box    = box;  // getting driver mailbox form env
+      this.repeat_cnt = cnt;
+      this.finished   = finished;
+    endfunction
+
+    // create and randomize transactions
+    // put transactions into mailbox
+    // call finished at the end
+    task run();
+      repeat (repeat_cnt) begin
+        item = new();
+        if (!item.randomize()) $fatal("[AHB Generator] : transaction randomization failed");
+        drv_box.put(item);
+      end
+      ->finished;
+      $display("generated all transactions");
+    endtask
+  endclass : generator
 
   class driver;
     virtual gpio_if vif;
-    // mailbox drv_box;
-    int num_items_received = 0;
+    virtual err_if  err_vif;
+    mailbox         drv_box;
+    int             num_items_received = 0;
 
-    function new(virtual gpio_if vif);
-      this.vif = vif;
-      // this.drv_box = drv_box;
+    function new(virtual gpio_if vif, virtual err_if err_vif, mailbox drv_box);
+      this.vif     = vif;
+      this.err_vif = err_vif;
+      this.drv_box = drv_box;
     endfunction
 
     task reset();
@@ -41,12 +69,23 @@ package gpio_pkg;
       wait (vif.reset_n);
     endtask
 
-    task update(transaction item);
+    task write(transaction item);
       @(posedge vif.clk);
       vif.GPIOIN <= item.data;
       num_items_received++;
     endtask
 
+    task run();
+      @(posedge vif.clk);
+      $display("T=%t [GPIO DRIVER] : starting", $time);
+      
+      forever begin
+        transaction item;
+        $display("T=%t [GPIO DRIVER] : waiting for item [%0d]", $time, num_items_received);
+        drv_box.get(item);
+        write(item);
+      end
+    endtask;
   endclass : driver
 
   class in_monitor;
@@ -76,15 +115,19 @@ package gpio_pkg;
   class out_monitor;
     virtual gpio_if vif;
     mailbox         scb_box;
+    event           data_written;
 
-    function new(virtual gpio_if vif, mailbox scb_box);
-      this.vif     = vif;
-      this.scb_box = scb_box;
+    function new(virtual gpio_if vif, mailbox scb_box, event data_written);
+      this.vif          = vif;
+      this.scb_box      = scb_box;
+      this.data_written = data_written;
     endfunction
 
     task run();
       transaction item;
       forever begin
+        @(data_written);
+        // ignore the 1st cycle
         @(posedge vif.clk);
         item = new();
         item.data       = vif.GPIOOUT[15:0];

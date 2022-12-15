@@ -9,8 +9,8 @@ package pkg;
     virtual gpio_if gpio_vif;
     event           data_written;
 
-    ahb_pkg::transaction  expected_queue[$];
-    gpio_pkg::transaction observed_queue[$];
+    gpio_pkg::transaction expected_queue[$];
+    ahb_pkg::transaction  observed_queue[$];
 
     int num_items_observed = 0;
 
@@ -26,7 +26,7 @@ package pkg;
 
     task receive_expected_items();
       forever begin
-        ahb_pkg::transaction item;
+        gpio_pkg::transaction item;
         scb_expected_box.get(item);
 `ifdef DEBUG
         item.display("SCOREBOARD AHB");
@@ -37,7 +37,7 @@ package pkg;
 
     task receive_observed_items();
       forever begin
-        gpio_pkg::transaction item;
+        ahb_pkg::transaction item;
         scb_observed_box.get(item);
 `ifdef DEBUG
         item.display("SCOREBOARD GPIO");
@@ -48,11 +48,9 @@ package pkg;
 
     task check();
       forever begin
-        gpio_pkg::transaction item;
-        ahb_pkg::transaction  expected_item;
+        ahb_pkg::transaction  item;
+        gpio_pkg::transaction expected_item;
         @(data_written);
-        @(posedge gpio_vif.monitor.clk);
-        @(posedge gpio_vif.monitor.clk);
         item          = observed_queue[0];
         expected_item = expected_queue[0];
 
@@ -126,15 +124,9 @@ package pkg;
       gpio_scb_expected_box = new();
       gpio_scb_observed_box = new();
       // initialise testbench components
-      ahb_generator         = new(.box(ahb_drv_box), .cnt(num_transactions), .finished(gen_finished));
+      gpio_generator        = new(.box(gpio_drv_box), .cnt(num_transactions), .finished(gen_finished));
       ahb_driver            = new(.vif( ahb_vif.driver), .drv_box( ahb_drv_box), .err_vif(err_vif));
       gpio_driver           = new(.vif(gpio_vif.driver), .drv_box(gpio_drv_box), .err_vif(err_vif));
-      ahb_wdata_monitor = new(
-        .vif(ahb_vif),
-        .scb_box(ahb_scb_expected_box),
-        .parity_sel(this.gpio_vif.PARITYSEL),
-        .data_written(data_written)
-      );
       ahb_rdata_monitor = new(
         .vif(ahb_vif),
         .scb_box(ahb_scb_observed_box),
@@ -144,15 +136,11 @@ package pkg;
         .vif(gpio_vif.monitor),
         .scb_box(gpio_scb_expected_box)
       );
-      gpio_out_monitor = new(
-        .vif(gpio_vif.monitor),
-        .scb_box(gpio_scb_observed_box)
-      );
       scoreboard = new(
-        .scb_expected_box(ahb_scb_expected_box),
-        .scb_observed_box(gpio_scb_observed_box),
+        .scb_expected_box(gpio_scb_expected_box),
+        .scb_observed_box(ahb_scb_observed_box),
         .gpio_drv_box(gpio_drv_box),
-        .data_written(data_written),
+        .init(init),
         .err_vif(err_vif),
         .gpio_vif(gpio_vif)
       );
@@ -167,13 +155,10 @@ package pkg;
 
     task test();
       fork
-        ahb_generator.run();
-        ahb_driver.run();
-        ahb_wdata_monitor.run();
+        gpio_generator.run();
         ahb_rdata_monitor.run();
         gpio_driver.run();
         gpio_in_monitor.run();
-        gpio_out_monitor.run();
         scoreboard.run();
       join_any
     endtask : test

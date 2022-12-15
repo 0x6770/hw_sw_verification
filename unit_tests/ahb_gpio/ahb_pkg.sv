@@ -32,6 +32,7 @@ package ahb_pkg;
     mailbox drv_box;  // send items to driver
     int repeat_cnt = 10;  // generate 10 transactions by default
     event finished;
+    int n = 0;
 
     // constructor
     function new(mailbox box, int cnt, event finished);
@@ -48,9 +49,10 @@ package ahb_pkg;
         item = new();
         if (!item.randomize()) $fatal("[AHB Generator] : transaction randomization failed");
         drv_box.put(item);
+        n++;
       end
       ->finished;
-      $display("generated all transactions");
+      $display("generated %d transactions", n);
     endtask
   endclass : generator
 
@@ -104,6 +106,7 @@ package ahb_pkg;
       vif.wdata <= write ? 16'h1 : 16'h0;
     endtask
 
+    // write takes 2 cycles to complete
     task write_data(transaction item);
       @(posedge vif.clk);
       vif.sel   <= 1'b1;
@@ -111,18 +114,12 @@ package ahb_pkg;
       vif.write <= 1'b1;
       vif.size  <= 3'b010;
       vif.trans <= 2'b10;
-      vif.wdata[15:0] <= item.data;
+      vif.wdata <=  'b0;
       vif.ready <= 1'b1;
-
-      @(posedge vif.clk);
-      while (!vif.readyout) begin
-        $display("T=%t [AHB DRIVER] : waiting until readyout is asserted", $time);
-        @(posedge vif.clk);
-      end
-
-      vif.sel   <= 1'b0;
-      vif.write <= 1'b0;
-      // vif.wdata <= '0;
+      @(posedge vif.clk); 
+      vif.sel         <= 1'b0;
+      vif.write       <= 1'b0;
+      vif.wdata[15:0] <= item.data;
     endtask
 
     task read_data();
@@ -132,39 +129,35 @@ package ahb_pkg;
       vif.write     <= 1'b0;
       // err_vif.error <= $urandom_range(0, 1);
       err_vif.error <= 1;
-
-      @(posedge vif.clk);
     endtask
 
-    task run();
+    task keep_write();
+      $display("T=%t [AHB DRIVER] : starting", $time);
+      switch_mode(1);
+
+      forever begin
+        transaction item;
+        $display("T=%t [AHB DRIVER] : waiting for item [%0d]", $time, num_items_received);
+        drv_box.get(item);
+`ifdef DEBUG
+        item.display("AHB DRIVER");
+`endif
+        write_data(item);
+        // @(posedge vif.clk);
+        num_items_received++;
+      end
+    endtask
+
+    task keep_read();
       @(posedge vif.clk);
       $display("T=%t [AHB DRIVER] : starting", $time);
 
+      switch_mode(0);
       forever begin
-        if (write) begin
-          transaction item;
-          $display("T=%t [AHB DRIVER] : waiting for item [%0d]", $time, num_items_received);
-          drv_box.get(item);
-`ifdef DEBUG
-          item.display("AHB DRIVER");
-`endif
-          err_vif.error <= 0;
-          vif.sel       <= 1'b0;
-          
-          // TODO: no need to reprogram GPIO if last mode is write
-          // set GPIO to write mode regardless the last mode
-          switch_mode(1);
-          write_data(item);
-
-        end else begin
-          switch_mode(0);
-          read_data();
-          num_items_received++;
-        end
-        // Alternating reads and writes
-        write++;
+        read_data();
       end
     endtask
+    
   endclass : driver
 
   // Monitor for AHB interface
@@ -182,12 +175,13 @@ package ahb_pkg;
     endfunction
 
     task run();
+      transaction item;
       $display("T=%t [AHB WDATA Monitor] : starting", $time);
-
       forever begin
         @(posedge vif.clk);
         if (vif.sel && (vif.addr === AHB_DATA_ADDR) && vif.write) begin
-          transaction item = new();
+          @(posedge vif.clk);
+          item             = new();
           item.data        = vif.wdata[15:0];
           item.parity_sel  = parity_sel;
           item.calc_parity();

@@ -3,7 +3,7 @@ program test #(
 ) (
     ahb_if ahb_if,
     gpio_if gpio_if,
-    err_if err_if,
+    err_if err_if
 );
   // declaring environment instance
   pkg::environment env;
