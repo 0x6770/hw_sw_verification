@@ -50,6 +50,7 @@ package ahb_pkg;
         drv_box.put(item);
       end
       ->finished;
+      $display("generated all transactions");
     endtask
   endclass : generator
 
@@ -167,47 +168,67 @@ package ahb_pkg;
   endclass : driver
 
   // Monitor for AHB interface
-  class monitor;
+  class wdata_monitor;
     virtual ahb_if vif;
-    mailbox        scb_observed_box;
-    mailbox        scb_expected_box;
+    mailbox        scb_box;
     bit            parity_sel;
+    event          data_written;
 
-    function new(virtual ahb_if vif, mailbox scb_observed_box, mailbox scb_expected_box, bit parity_sel);
-      this.vif              = vif;
-      this.scb_observed_box = scb_observed_box;
-      this.scb_expected_box = scb_expected_box;
-      this.parity_sel       = parity_sel;
+    function new(virtual ahb_if vif, mailbox scb_box, bit parity_sel, event data_written);
+      this.vif          = vif;
+      this.scb_box      = scb_box;
+      this.parity_sel   = parity_sel;
+      this.data_written = data_written;
     endfunction
 
     task run();
-      $display("T=%t [AHB Monitor] : starting", $time);
+      $display("T=%t [AHB WDATA Monitor] : starting", $time);
 
       forever begin
         @(posedge vif.clk);
-        if (vif.sel && (vif.addr === AHB_DATA_ADDR)) begin
-          if (vif.write) begin
-            transaction item = new();
-            item.data       = vif.wdata[15:0];
-            item.parity_sel = parity_sel;
-            item.calc_parity();
+        if (vif.sel && (vif.addr === AHB_DATA_ADDR) && vif.write) begin
+          transaction item = new();
+          item.data        = vif.wdata[15:0];
+          item.parity_sel  = parity_sel;
+          item.calc_parity();
 `ifdef DEBUG
-            item.display("AHBMONITOR WRITE");
+          item.display("AHBMONITOR HWDATA");
 `endif
-            scb_expected_box.put(item);
-          end else begin
-            transaction item = new();
-            item.data       = vif.rdata[15:0];
-            item.parity_sel = parity_sel;
-            item.parity     = vif.rdata[16];
-`ifdef DEBUG
-            item.display("AHBMONITOR READ");
-`endif
-            scb_observed_box.put(item);
-          end
+          scb_box.put(item);
+          ->data_written;
         end
       end
     endtask
-  endclass : monitor
+  endclass : wdata_monitor
+
+  class rdata_monitor;
+    virtual ahb_if vif;
+    mailbox        scb_box;
+    bit            parity_sel;
+
+    function new(virtual ahb_if vif, mailbox scb_box, bit parity_sel);
+      this.vif        = vif;
+      this.scb_box    = scb_box;
+      this.parity_sel = parity_sel;
+    endfunction
+
+    task run();
+      $display("T=%t [AHB RDATA Monitor] : starting", $time);
+
+      forever begin
+        @(posedge vif.clk);
+        if (vif.sel && (vif.addr === AHB_DATA_ADDR) && !vif.write) begin
+          transaction item = new();
+          item.data        = vif.rdata[15:0];
+          item.parity_sel  = vif.rdata[16];
+          item.calc_parity();
+`ifdef DEBUG
+          item.display("AHBMONITOR HRDATA");
+`endif
+          scb_box.put(item);
+        end
+      end
+    endtask
+  endclass : rdata_monitor
 
 endpackage : ahb_pkg

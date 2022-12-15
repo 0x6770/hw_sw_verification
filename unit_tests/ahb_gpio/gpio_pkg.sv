@@ -5,11 +5,13 @@ package gpio_pkg;
     rand logic [15:0] data;
     rand logic        parity;
     logic             real_parity;
+    logic             parity_sel;
 
     function void display(string tag = "");
       $display("T=%t [%s]", $time, tag);
       $display("data:        %h", data);
       $display("parity:      %h", parity);
+      $display("parity_sel:  %h", parity_sel);
       $display("real_parity: %h", real_parity);
     endfunction : display
 
@@ -17,8 +19,8 @@ package gpio_pkg;
     function new();
     endfunction : new
 
-    function void calc_parity(PARITYSEL);
-      real_parity = PARITYSEL ? ~(^data) : ^data;
+    function void calc_parity();
+      real_parity = parity_sel ? ~(^data) : ^data;
     endfunction
 
   endclass : transaction
@@ -47,13 +49,13 @@ package gpio_pkg;
 
   endclass : driver
 
-  class monitor;
+  class in_monitor;
     virtual gpio_if vif;
-    mailbox         scb_observed_box;
+    mailbox         scb_box;
 
-    function new(virtual gpio_if vif, mailbox scb_observed_box);
-      this.vif              = vif;
-      this.scb_observed_box = scb_observed_box;
+    function new(virtual gpio_if vif, mailbox scb_box);
+      this.vif     = vif;
+      this.scb_box = scb_box;
     endfunction
 
     task run();
@@ -61,10 +63,35 @@ package gpio_pkg;
         @(posedge vif.clk);
         begin
           transaction item = new();
-          item.data   = vif.GPIOOUT[15:0];
-          item.parity = vif.GPIOOUT[16];
-          item.calc_parity(vif.PARITYSEL);
+          item.data       = vif.GPIOIN[15:0];
+          item.parity     = vif.GPIOIN[16];
+          item.parity_sel = vif.PARITYSEL;
+          item.calc_parity();
+          scb_box.put(item);
         end
+      end
+    endtask
+  endclass
+
+  class out_monitor;
+    virtual gpio_if vif;
+    mailbox         scb_box;
+
+    function new(virtual gpio_if vif, mailbox scb_box);
+      this.vif     = vif;
+      this.scb_box = scb_box;
+    endfunction
+
+    task run();
+      transaction item;
+      forever begin
+        @(posedge vif.clk);
+        item = new();
+        item.data       = vif.GPIOOUT[15:0];
+        item.parity     = vif.GPIOOUT[16];
+        item.parity_sel = vif.PARITYSEL;
+        item.calc_parity();
+        scb_box.put(item);
       end
     endtask
   endclass
