@@ -6,6 +6,7 @@ package gpio_pkg;
     rand logic        parity;
     logic             real_parity;
     logic             parity_sel;
+    bit               error;
 
     function void display(string tag = "");
       $display("T=%t [%s]", $time, tag);
@@ -13,14 +14,23 @@ package gpio_pkg;
       $display("parity:      %h", parity);
       $display("parity_sel:  %h", parity_sel);
       $display("real_parity: %h", real_parity);
+      $display("error:       %h", error);
     endfunction : display
 
     // constructor
     function new();
     endfunction : new
 
+    function logic p();
+      p = parity_sel ? ~(^data) : ^data;
+    endfunction
+
     function void calc_parity();
-      real_parity = parity_sel ? ~(^data) : ^data;
+      real_parity = error ? ~p() : p();
+    endfunction
+
+    function void detect_err();
+      error = parity !== p();
     endfunction
   endclass : transaction
 
@@ -43,11 +53,10 @@ package gpio_pkg;
     task run();
       repeat (repeat_cnt) begin
         item = new();
-        if (!item.randomize()) $fatal("[AHB Generator] : transaction randomization failed");
+        if (!item.randomize()) $fatal("[GPIO Generator] : transaction randomization failed");
         drv_box.put(item);
       end
       ->finished;
-      $display("generated all transactions");
     endtask
   endclass : generator
 
@@ -73,13 +82,15 @@ package gpio_pkg;
 
     task run();
       transaction item;
+      bit parity;
       @(posedge vif.clk);
       $display("T=%t [GPIO DRIVER] : starting", $time);
       
       forever begin
         $display("T=%t [GPIO DRIVER] : waiting for item [%0d]", $time, num_items_received);
         drv_box.get(item);
-        item.parity = vif.PARITYSEL ? ~^item.data : ^ item.data;
+        parity = vif.PARITYSEL ? ~^item.data : ^ item.data;
+        // item.parity = item.error ? ~parity : parity;
         @(posedge vif.clk);
         vif.GPIOIN <= {item.parity, item.data};
         ->data_written;
@@ -109,6 +120,7 @@ package gpio_pkg;
         item.data       = vif.GPIOIN[15:0];
         item.parity     = vif.GPIOIN[16];
         item.parity_sel = vif.PARITYSEL;
+        item.detect_err();
         item.calc_parity();
         scb_box.put(item);
       end

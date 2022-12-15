@@ -28,14 +28,14 @@ package pkg;
         $display("expected:   0x%4h observed:   0x%4h",  expected_item.data,       item.data);
         $display("expected:   0b%h    observed:   0b%h", expected_item.parity,     item.parity);
         $display("parity_sel: 0b%h    parity_sel: 0b%h", expected_item.parity_sel, item.parity_sel);
+        $display("error:      0b%h    PARITYERR:  0b%h", expected_item.error, gpio_vif.PARITYERR);
 `ifdef DEBUG
         item.display("SCOREBOARD");
         expected_item.display("SCOREBOARD");
 `endif
         assert (expected_item.data   === item.data);
-        assert (expected_item.parity === item.parity);
-        // assert (expected_item.parity === (err_vif.error ? ~item.parity : item.parity));
-        assert (err_vif.error === gpio_vif.PARITYERR);
+        assert (expected_item.parity === (expected_item.error ? ~item.parity : item.parity));
+        assert (expected_item.error === gpio_vif.PARITYERR);
         num_items_observed++;
       end
     endtask
