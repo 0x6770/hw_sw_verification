@@ -125,15 +125,13 @@ package ahb_pkg;
     task read_data();
       @(posedge vif.clk);
       vif.sel       <= 1'b1;
-      vif.addr      <= AHB_DATA_ADDR;
       vif.write     <= 1'b0;
       // err_vif.error <= $urandom_range(0, 1);
-      err_vif.error <= 1;
+      // err_vif.error <= 1;
     endtask
 
     task keep_write();
       $display("T=%t [AHB DRIVER] : starting", $time);
-      switch_mode(1);
 
       forever begin
         transaction item;
@@ -152,7 +150,6 @@ package ahb_pkg;
       @(posedge vif.clk);
       $display("T=%t [AHB DRIVER] : starting", $time);
 
-      switch_mode(0);
       forever begin
         read_data();
       end
@@ -199,28 +196,30 @@ package ahb_pkg;
     virtual ahb_if vif;
     mailbox        scb_box;
     bit            parity_sel;
+    event          data_written;
 
-    function new(virtual ahb_if vif, mailbox scb_box, bit parity_sel);
-      this.vif        = vif;
-      this.scb_box    = scb_box;
-      this.parity_sel = parity_sel;
+    function new(virtual ahb_if vif, mailbox scb_box, bit parity_sel, event data_written);
+      this.vif          = vif;
+      this.scb_box      = scb_box;
+      this.parity_sel   = parity_sel;
+      this.data_written = data_written;
     endfunction
 
     task run();
+        transaction item;
       $display("T=%t [AHB RDATA Monitor] : starting", $time);
 
       forever begin
-        @(posedge vif.clk);
-        if (vif.sel && (vif.addr === AHB_DATA_ADDR) && !vif.write) begin
-          transaction item = new();
-          item.data        = vif.rdata[15:0];
-          item.parity_sel  = vif.rdata[16];
-          item.calc_parity();
+        @(data_written);
+        item             = new();
+        item.data        = vif.rdata[15:0];
+        item.parity      = vif.rdata[16];
+        item.parity_sel  = this.parity_sel;
+        item.calc_parity();
 `ifdef DEBUG
-          item.display("AHBMONITOR HRDATA");
+        item.display("AHBMONITOR HRDATA");
 `endif
-          scb_box.put(item);
-        end
+        scb_box.put(item);
       end
     endtask
   endclass : rdata_monitor

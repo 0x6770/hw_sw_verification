@@ -84,13 +84,9 @@ module AHBGPIO #(
 
   // Update in/out switch
   always @(posedge HCLK, negedge HRESETn) begin
-    // if (HRESETn) begin
-    //   $display(last_HADDR[7:0]);
-    // end
     if (!HRESETn) begin
       gpio_dir <= 16'h0000;
     end else if ((last_HADDR[7:0] == GPIO_DIR_ADDR) & last_HSEL & last_HWRITE & last_HTRANS[1]) begin
-      // $display("configure mode =============================================");
       gpio_dir <= HWDATA[15:0];
     end
   end
@@ -107,19 +103,15 @@ module AHBGPIO #(
 
   // Update input value
   always @(posedge HCLK, negedge HRESETn) begin
-    // if (HRESETn) begin
-    //   $display("gpio direction: %d, GPIOOUT: %h, GPIOIN: %h", gpio_dir, GPIOOUT, GPIOIN);
-    // end
     if (!HRESETn) begin
       gpio_datain <= 17'h0000;
     end else if (gpio_dir == 16'h0000) gpio_datain <= GPIOIN;
     else if (gpio_dir == 16'h0001) gpio_datain <= GPIOOUT;
   end
 
-  assign HRDATA  = {15'b0, gpio_datain};
+  assign HRDATA  = gpio_datain;
   assign GPIOOUT = {parity(gpio_dataout, PARITYSEL), gpio_dataout};
   // Parity
-  // assign PARITYERR = parity_err;
   assign PARITYERR = HRDATA[16] !== parity(HRDATA[15:0], PARITYSEL);
 
 

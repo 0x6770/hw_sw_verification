@@ -20,4 +20,5 @@ vlog -work work \
 vopt -work work tbench_top -o work_opt
 vsim work_opt \
      -do sim.tcl \
+     -sv_seed random \
      -coverage -c

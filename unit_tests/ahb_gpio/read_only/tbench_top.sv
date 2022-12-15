@@ -27,9 +27,9 @@ module tbench_top;
   test #(
       .NUM_TRANSACTIONS(100)
   ) t1 (
-      .ahb_if    (ahb_if),
-      .gpio_if   (gpio_if),
-      .err_if    (err_if)
+      .ahb_if (ahb_if),
+      .gpio_if(gpio_if),
+      .err_if (err_if)
   );
 
   //DUT instance, interface signals are connected to the DUT ports
@@ -54,14 +54,6 @@ module tbench_top;
       .PARITYERR(gpio_if.PARITYERR),
       .PARITYSEL(gpio_if.PARITYSEL)   // 1'b1 ? odd parity : even parity
   );
-
-  // loopback u0 (
-  //     .clk      (ahb_if.clk),
-  //     .reset_n  (ahb_if.reset_n),
-  //     .error_i  (err_if.error),
-  //     .GPIOOUT_i(gpio_if.GPIOOUT),
-  //     .GPIOIN_o (gpio_if.GPIOIN)
-  // );
 
   //enabling the wave dump
   initial begin

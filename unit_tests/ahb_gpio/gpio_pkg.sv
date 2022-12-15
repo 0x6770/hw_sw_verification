@@ -55,12 +55,14 @@ package gpio_pkg;
     virtual gpio_if vif;
     virtual err_if  err_vif;
     mailbox         drv_box;
+    event           data_written;
     int             num_items_received = 0;
 
-    function new(virtual gpio_if vif, virtual err_if err_vif, mailbox drv_box);
-      this.vif     = vif;
-      this.err_vif = err_vif;
-      this.drv_box = drv_box;
+    function new(virtual gpio_if vif, virtual err_if err_vif, mailbox drv_box, event data_written);
+      this.vif          = vif;
+      this.err_vif      = err_vif;
+      this.drv_box      = drv_box;
+      this.data_written = data_written;
     endfunction
 
     task reset();
@@ -71,7 +73,7 @@ package gpio_pkg;
 
     task write(transaction item);
       @(posedge vif.clk);
-      vif.GPIOIN <= item.data;
+      vif.GPIOIN <= {item.parity, item.data};
       num_items_received++;
     endtask
 
@@ -83,7 +85,9 @@ package gpio_pkg;
         transaction item;
         $display("T=%t [GPIO DRIVER] : waiting for item [%0d]", $time, num_items_received);
         drv_box.get(item);
+        item.parity = vif.PARITYSEL ? ~^item.data : ^ item.data;
         write(item);
+        ->data_written;
       end
     endtask;
   endclass : driver
@@ -91,23 +95,25 @@ package gpio_pkg;
   class in_monitor;
     virtual gpio_if vif;
     mailbox         scb_box;
+    event           data_written;
 
-    function new(virtual gpio_if vif, mailbox scb_box);
-      this.vif     = vif;
-      this.scb_box = scb_box;
+    function new(virtual gpio_if vif, mailbox scb_box, event data_written);
+      this.vif          = vif;
+      this.scb_box      = scb_box;
+      this.data_written = data_written;
     endfunction
 
     task run();
+      transaction item;
       forever begin
-        @(posedge vif.clk);
-        begin
-          transaction item = new();
-          item.data       = vif.GPIOIN[15:0];
-          item.parity     = vif.GPIOIN[16];
-          item.parity_sel = vif.PARITYSEL;
-          item.calc_parity();
-          scb_box.put(item);
-        end
+        @(data_written);
+        // @(posedge vif.clk);
+        item            = new();
+        item.data       = vif.GPIOIN[15:0];
+        item.parity     = vif.GPIOIN[16];
+        item.parity_sel = vif.PARITYSEL;
+        item.calc_parity();
+        scb_box.put(item);
       end
     endtask
   endclass
@@ -127,8 +133,6 @@ package gpio_pkg;
       transaction item;
       forever begin
         @(data_written);
-        // ignore the 1st cycle
-        @(posedge vif.clk);
         item = new();
         item.data       = vif.GPIOOUT[15:0];
         item.parity     = vif.GPIOOUT[16];

@@ -4,55 +4,25 @@ package pkg;
   class scoreboard;
     mailbox         scb_expected_box;
     mailbox         scb_observed_box;
-    mailbox         gpio_drv_box;
     virtual err_if  err_vif;
     virtual gpio_if gpio_vif;
-    event           data_written;
-
-    gpio_pkg::transaction expected_queue[$];
-    ahb_pkg::transaction  observed_queue[$];
 
     int num_items_observed = 0;
 
-    function new(mailbox scb_expected_box, mailbox scb_observed_box, mailbox gpio_drv_box,
-                 virtual err_if err_vif, virtual gpio_if gpio_vif, event data_written);
+    function new(mailbox scb_expected_box, mailbox scb_observed_box,
+                 virtual err_if err_vif, virtual gpio_if gpio_vif);
       this.scb_expected_box = scb_expected_box;
       this.scb_observed_box = scb_observed_box;
-      this.gpio_drv_box     = gpio_drv_box;
-      this.data_written     = data_written;
       this.gpio_vif         = gpio_vif;
       this.err_vif          = err_vif;
     endfunction
 
-    task receive_expected_items();
+    task run();
+      ahb_pkg::transaction  item;
+      gpio_pkg::transaction expected_item;
       forever begin
-        gpio_pkg::transaction item;
-        scb_expected_box.get(item);
-`ifdef DEBUG
-        item.display("SCOREBOARD AHB");
-`endif
-        expected_queue.push_front(item);
-      end
-    endtask
-
-    task receive_observed_items();
-      forever begin
-        ahb_pkg::transaction item;
+        scb_expected_box.get(expected_item);
         scb_observed_box.get(item);
-`ifdef DEBUG
-        item.display("SCOREBOARD GPIO");
-`endif
-        observed_queue.push_front(item);
-      end
-    endtask
-
-    task check();
-      forever begin
-        ahb_pkg::transaction  item;
-        gpio_pkg::transaction expected_item;
-        @(data_written);
-        item          = observed_queue[0];
-        expected_item = expected_queue[0];
 
         $display("============================== [%d]",  num_items_observed);
         $display("expected:   0x%4h observed:   0x%4h",  expected_item.data,       item.data);
@@ -70,21 +40,14 @@ package pkg;
       end
     endtask
 
-    task run();
-      fork
-        receive_observed_items();
-        receive_expected_items();
-        check();
-      join_any
-    endtask
   endclass : scoreboard
 
   class environment;
     // instantiate driver, monitor, scoreboard and generator
     ahb_pkg::wdata_monitor ahb_wdata_monitor;
     ahb_pkg::rdata_monitor ahb_rdata_monitor;
-    ahb_pkg::generator     ahb_generator;
     ahb_pkg::driver        ahb_driver;
+    gpio_pkg::generator    gpio_generator;
     gpio_pkg::driver       gpio_driver;
     gpio_pkg::in_monitor   gpio_in_monitor;
     gpio_pkg::out_monitor  gpio_out_monitor;
@@ -113,7 +76,7 @@ package pkg;
       this.ahb_vif            = ahb_vif;
       this.gpio_vif           = gpio_vif;
       this.num_transactions   = num_transactions;
-      this.gpio_vif.PARITYSEL = $urandom() % 2 == 1;
+      this.gpio_vif.PARITYSEL = $urandom_range(0, 1);
       this.err_vif            = err_vif;
 
       // initialise mailbox
@@ -126,21 +89,21 @@ package pkg;
       // initialise testbench components
       gpio_generator        = new(.box(gpio_drv_box), .cnt(num_transactions), .finished(gen_finished));
       ahb_driver            = new(.vif( ahb_vif.driver), .drv_box( ahb_drv_box), .err_vif(err_vif));
-      gpio_driver           = new(.vif(gpio_vif.driver), .drv_box(gpio_drv_box), .err_vif(err_vif));
+      gpio_driver           = new(.vif(gpio_vif.driver), .drv_box(gpio_drv_box), .err_vif(err_vif), .data_written(data_written));
       ahb_rdata_monitor = new(
         .vif(ahb_vif),
         .scb_box(ahb_scb_observed_box),
-        .parity_sel(this.gpio_vif.PARITYSEL)
+        .parity_sel(this.gpio_vif.PARITYSEL),
+        .data_written(data_written)
       );
       gpio_in_monitor = new(
         .vif(gpio_vif.monitor),
-        .scb_box(gpio_scb_expected_box)
+        .scb_box(gpio_scb_expected_box),
+        .data_written(data_written)
       );
       scoreboard = new(
         .scb_expected_box(gpio_scb_expected_box),
         .scb_observed_box(ahb_scb_observed_box),
-        .gpio_drv_box(gpio_drv_box),
-        .init(init),
         .err_vif(err_vif),
         .gpio_vif(gpio_vif)
       );
@@ -151,14 +114,17 @@ package pkg;
         ahb_driver.reset();
         gpio_driver.reset();
       join_any
+      // change GPIO to read mode
+      ahb_driver.switch_mode(0);
     endtask : pre_test
 
     task test();
       fork
         gpio_generator.run();
-        ahb_rdata_monitor.run();
         gpio_driver.run();
         gpio_in_monitor.run();
+        ahb_driver.keep_read();
+        ahb_rdata_monitor.run();
         scoreboard.run();
       join_any
     endtask : test

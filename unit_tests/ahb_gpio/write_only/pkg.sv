@@ -98,15 +98,6 @@ package pkg;
         .parity_sel(this.gpio_vif.PARITYSEL),
         .data_written(data_written)
       );
-      ahb_rdata_monitor = new(
-        .vif(ahb_vif),
-        .scb_box(ahb_scb_observed_box),
-        .parity_sel(this.gpio_vif.PARITYSEL)
-      );
-      gpio_in_monitor = new(
-        .vif(gpio_vif.monitor),
-        .scb_box(gpio_scb_expected_box)
-      );
       gpio_out_monitor = new(
         .vif(gpio_vif.monitor),
         .scb_box(gpio_scb_observed_box),
@@ -126,6 +117,8 @@ package pkg;
         ahb_driver.reset();
         gpio_driver.reset();
       join_any
+
+      ahb_driver.switch_mode(1);
     endtask : pre_test
 
     task test();
@@ -133,8 +126,6 @@ package pkg;
         ahb_generator.run();
         ahb_driver.keep_write();
         ahb_wdata_monitor.run();
-        ahb_rdata_monitor.run();
-        gpio_in_monitor.run();
         gpio_out_monitor.run();
         scoreboard.run();
       join_any
