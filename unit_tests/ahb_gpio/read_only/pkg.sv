@@ -66,12 +66,24 @@ package pkg;
     virtual ahb_if         ahb_vif;
     virtual gpio_if        gpio_vif;
 
+    covergroup cover_gpio @(gpio_vif.clk);
+    option.auto_bin_max = 10;
+      cov_GPIOIN_data   : coverpoint gpio_vif.GPIOIN[15:0] {
+        bins all0 = {0}; bins all1 = {16'hffff}; bins others = default;
+      }
+      cov_GPIOIN_parity : coverpoint gpio_vif.GPIOIN[16] {bins even = {1'b0}; bins odd = {1'b1};}
+      cov_PARITYERR     : coverpoint gpio_vif.PARITYERR {bins on = {1'b1}; bins off = {1'b0};}
+      cross cov_GPIOIN_parity, cov_PARITYERR;
+    endgroup
+
     // constructor
     function new(virtual ahb_if ahb_vif, virtual gpio_if gpio_vif, int num_transactions);
       $display("[ENVIRONMENT] : constructing new environment");
       this.ahb_vif            = ahb_vif;
       this.gpio_vif           = gpio_vif;
       this.num_transactions   = num_transactions;
+
+      cover_gpio            = new();
 
       // initialise mailbox
       ahb_drv_box           = new();
@@ -112,6 +124,7 @@ package pkg;
     endtask : pre_test
 
     task test();
+      // cover_gpio.sample(gpio_vif);
       fork
         gpio_generator.run();
         gpio_driver.run();

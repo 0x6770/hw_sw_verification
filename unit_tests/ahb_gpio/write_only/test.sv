@@ -1,7 +1,7 @@
 program test #(
     parameter int NUM_TRANSACTIONS = 10
 ) (
-    ahb_if ahb_if,
+    ahb_if  ahb_if,
     gpio_if gpio_if
 );
   // declaring environment instance

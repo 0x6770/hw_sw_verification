@@ -8,6 +8,8 @@ package gpio_pkg;
     logic             parity_sel;
     bit               error;
 
+    constraint c1 { data dist { [0:9]:/20, [10:2**16-11]:/60, [2**16-10:2**16-1]:/20 }; }
+
     function void display(string tag = "");
       $display("T=%t [%s]", $time, tag);
       $display("data:        %h", data);
@@ -74,14 +76,8 @@ package gpio_pkg;
 
     task reset();
       wait (!vif.reset_n);
-      vif.GPIOIN    <= 'h0;
-      vif.PARITYSEL <= 'h0;
-      @(posedge vif.clk);
-      vif.PARITYSEL <= 'h1;
-      @(posedge vif.clk);
-      vif.PARITYSEL <= 'h0;
-      @(posedge vif.clk);
-      vif.PARITYSEL <= $urandom()%2;
+      vif.GPIOIN    = 'h0;
+      vif.PARITYSEL = $urandom()%2;
       wait (vif.reset_n);
     endtask
 

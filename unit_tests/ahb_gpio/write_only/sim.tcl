@@ -1,3 +1,3 @@
-coverage save -onexit -directive -codeAll write_only.ucdb
+coverage save -onexit -directive -codeAll -cvg write_only.ucdb
 log -r /*
 run -all
