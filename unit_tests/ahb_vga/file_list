@@ -1,0 +1,3 @@
+../../rtl/AHB_VGA/*.sv
+vga_tb.sv
+vga_top.sv
