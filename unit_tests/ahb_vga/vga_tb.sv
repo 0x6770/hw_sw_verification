@@ -3,15 +3,17 @@ program automatic vga_tb
 (vga_if.TEST vga_if); 
 
  logic [7:0] TEXT;   
- parameter H_LOW = 99;
- parameter V_LOW =30;
+ //parameter H_LOW = 99;
+ //parameter V_LOW =30;
 
-  class TEXT_RAND;                   // Declare a class to randomise the operand values
+// Declare a class to randomise the operand values
+  class TEXT_RAND;                   
     rand logic [7:0]	TEXT;
     constraint ascii { TEXT inside {[32:127]};}
   endclass
   TEXT_RAND text_rand;
 
+//create covergroup for RGB output
   covergroup cover_RGB;          
       coverpoint  vga_if.cb.RGB {
         bins zero = {8'h00};
@@ -20,6 +22,7 @@ program automatic vga_tb
   endgroup
   cover_RGB covRGB;
 
+//create covergroup for TEXT inputs
   covergroup cover_TEXT;          
       coverpoint  TEXT {
         bins special_char = {[32:47],[58:64],[91:96],[123:127]};
@@ -49,8 +52,8 @@ program automatic vga_tb
   assign text_reference_one[16] = 8'b00000000;
 
 
-  //Reset
-  task deassert_reset();
+  //Reset function
+  task reset();
     begin
           // reset
           vga_if.HRESETn = 0; 
@@ -72,7 +75,7 @@ program automatic vga_tb
     endtask
 
   // AHB_BFM to write text into the VGA
-  task vga_write(input [7:0] TEXT);
+  task ahb_write_text(input [7:0] TEXT);
       covTEXT = new();
       begin
           @vga_if.cb 
@@ -89,7 +92,6 @@ program automatic vga_tb
           vga_if.cb.HWRITE <= 1'b0;
           vga_if.cb.HTRANS <= 2'b00;
           vga_if.cb.HWDATA <= {24'd0, TEXT};
-          covTEXT.sample(); 
           // One more cycle to wait for gpio_dir signal to change
           @vga_if.cb 
           vga_if.cb.HTRANS <= 2'b10;
@@ -104,22 +106,22 @@ program automatic vga_tb
   endtask
 
     // initially write the "1TEST" to check the VGA works normally
-    task initial_correct_check();                       // Initial check of correct GPIO input with an immediate output
+    task direct_test();                       // Initial check of correct GPIO input with an immediate output
 	    begin
         wait (vga_if.HRESETn == 1'b1);		            // Wait for reset to be disabled
         #220
         TEXT = 8'h31;   //1
-        vga_write(TEXT);        
+        ahb_write_text(TEXT);        
         TEXT = 8'h54;   //T
-        vga_write(TEXT);
+        ahb_write_text(TEXT);
         TEXT = 8'h45;   //E
-        vga_write(TEXT);
+        ahb_write_text(TEXT);
         TEXT = 8'h53;   //S
-        vga_write(TEXT);
+        ahb_write_text(TEXT);
         TEXT = 8'h54;   //T
-        vga_write(TEXT);
+        ahb_write_text(TEXT);
         TEXT = 8'h0d;   // \n
-        vga_write(TEXT);
+        ahb_write_text(TEXT);
       end
       //   assert (vga_if.DLS_ERROR == 1'b0)
       //   else $fatal ("Initial check of correct VGA failed");
@@ -127,7 +129,7 @@ program automatic vga_tb
 	  endtask
 
 // automatic checker for the text input 1, verify the charater "1" display at the correct position of the monitor
-    task auto_check(input [1:705] frame [1:520], input [1:8] reference [1:16]);
+    task checker_for_one(input [1:705] frame [1:520], input [1:8] reference [1:16]);
       bit match = 1;
       for (int i = 30; i <=45; i++) begin
           match = match & (frame[i][51:58] == reference[i-29]);
@@ -139,34 +141,36 @@ program automatic vga_tb
     endtask
 
 
-  // randomly write 600 valid ASCII charaters to test the VGA display
-    task constrained_random_check();
+  // randomly write 810 valid ASCII charaters to test the VGA display
+    task constrained_random_test();
       int fd;
-      fd = $fopen ("Expected_Output", "w");
+      fd = $fopen ("Expected_frame.txt", "w");
       text_rand = new();
         wait (vga_if.HRESETn == 1'b1);		            // Wait for reset to be disabled
         #220
-        for (int i = 0; i < 600; i++) begin
+        for (int i = 1; i <= 810; i++) begin
             text_rand.randomize();
-            // $display ("Expected_text=%s", text_rand.TEXT);
-            $fwrite (fd, "%c", text_rand.TEXT);
+            covTEXT.sample(); 
+            if(i%30==0)  
+              $fwrite (fd, "%c\n", text_rand.TEXT);
+            else
+              $fwrite (fd, "%c", text_rand.TEXT);
             TEXT = text_rand.TEXT;      //put randomised text into TEXT to be monitored for coverage
-            vga_write(TEXT);
+            ahb_write_text(TEXT);
         end
         TEXT = 8'h0d;   // \n
-        vga_write(TEXT); //write carrige return
+        ahb_write_text(TEXT); //write carrige return
       $fclose(fd);
     endtask
 
-    // monitor one frame for the vga RGB outputs, the outputs are in bmp format
-    task monitor_for_frame_bmp(output [7:0] frame [1:520][1:705]);
+    // Monitor one frame for the vga RGB outputs, the outputs should be printed in .ppm format
+    task monitor_for_frame_ppm(output [7:0] frame [1:520][1:705]);
       wait(vga_if.cb.VSYNC==1);
-      //$display("time: %b", $realtime);
+      covRGB = new();
       for (int j = 1; j <=520; j++) begin
-        covRGB = new();
         wait(vga_if.cb.HSYNC==1);
         for(int i = 1; i <= 705; i++) begin
-            //covRGB.sample();   
+            covRGB.sample();   
             if(vga_if.cb.RGB == 8'h00 || vga_if.cb.RGB == 8'h1c)
               frame[j][i] = vga_if.cb.RGB;
             else 
@@ -178,14 +182,14 @@ program automatic vga_tb
       end
     endtask
 
-    //OLD:: monitor one frame for the vga outputs, each frame is consisit of 480 lines
+    //Monitor one frame of the VGA (705*520), output are printed in text format
     task monitor_for_frame_text(output [1:705] frame [1:520]);
       wait(vga_if.cb.VSYNC==1);
+      covRGB = new();
       for (int j = 1; j <=520; j++) begin
-          //covRGB = new();
           wait(vga_if.cb.HSYNC==1);
           for(int i = 1; i <= 705; i++) begin
-              //covRGB.sample();   
+              covRGB.sample();   
               if(vga_if.cb.RGB == 8'h00 )
                 frame[j][i] = 0;
               else if(vga_if.cb.RGB == 8'h1c )
@@ -199,13 +203,14 @@ program automatic vga_tb
       end
     endtask
 
-    // // write the observed outputs to a bmp file
-    task write_to_bmp(input[7:0] frame [1:520][1:705] );
+    // Write the observed outputs to a .ppm file
+    task write_to_ppm(input[7:0] frame [1:520][1:705] );
         int fd;
-        fd = $fopen ("Observed_Output_bmp", "w");
+        fd = $fopen ("Observed_frame.ppm", "w");
+          $fwrite (fd, "%s", "P2\n705 520\n28\n");
           for(int i =1; i <= 520; i ++) begin
             for(int j =1; j <= 705; j ++) begin
-              $fwrite (fd, "%c", frame[i][j]);
+              $fwrite (fd, "%d ", frame[i][j]);
             end
         end
         $fclose(fd);
@@ -214,7 +219,7 @@ program automatic vga_tb
     // OLD: write the observed outputs to a text file
     task write_to_text(input[ 1:705] frame [1:520] );
         int fd;
-        fd = $fopen ("Observed_Output_text", "w");
+        fd = $fopen ("Observed_frame.txt", "w");
           for(int i =1; i <= 520; i ++) begin
               $fdisplay (fd, "%b", frame[i]);
             end
@@ -223,51 +228,52 @@ program automatic vga_tb
 
 
   initial begin
-    //create containter for holding frame in bmp format
-    logic [7:0] frame_in_bmp [1:520][1:705];
+    //create containter for holding frame in ppm format
+    logic [7:0] frame_in_ppm [1:520][1:705];
     //create container for holding frame in text format
     logic [1:705] frame_in_text [1:520];
 
     // Direct test, checking charater "1" is displayed at the corrct position on the frame
     // An automatic checker is developed to perform comparison
-    deassert_reset();                
-    initial_correct_check();
+    reset();                
+    direct_test();
     monitor_for_frame_text(frame_in_text);
     write_to_text(frame_in_text);
-    auto_check(frame_in_text,text_reference_one);
+    checker_for_one(frame_in_text,text_reference_one);
 
     // Constrained random test, 600 random characters is given as input, and the output 
     // is cpnverted to a bit-map image for convinient observation
-    deassert_reset();                
-    constrained_random_check ();
-    monitor_for_frame_bmp(frame_in_bmp);
-    write_to_bmp(frame_in_bmp);
+    reset();                
+    constrained_random_test ();
+    monitor_for_frame_ppm(frame_in_ppm);
+    write_to_ppm(frame_in_ppm);
     $finish;
 
   end
 
-    assert_AHB_behaviour1: assert property(     
-                          @(posedge vga_if.cb) disable iff (!vga_if.HRESETn)
-                            vga_if.cb.HSEL_VGA |-> (vga_if.cb.HWRITE) ##1 (!vga_if.cb.HWRITE)
-                        );
-    assert_AHB_behaviour2: assert property(     
-                          @(posedge vga_if.cb) disable iff (!vga_if.HRESETn)
-                            vga_if.cb.HWRITE  |-> (vga_if.cb.HSEL_VGA) ##1 (!vga_if.cb.HSEL_VGA)
-                        );
-
-    assert_AHB_behaviour3: assert property(     
-                          @(posedge vga_if.cb) disable iff (!vga_if.HRESETn)
-                            vga_if.cb.HWRITE |-> (vga_if.cb.HADDR  == 32'h5000_0000) ##1 (vga_if.cb.HADDR  != 32'h5000_0000)
-                        );
-
-    assert_AHB_behaviour4: assert property(     
-                          @(posedge vga_if.cb) disable iff (!vga_if.HRESETn)
-                            vga_if.cb.HWRITE |-> (vga_if.cb.HTRANS == 2'b10) ##1  (vga_if.cb.HTRANS != 2'b10)
-                        );
-
-    assert_AHB_behaviour5: assert property(     
-                          @(posedge vga_if.cb) disable iff (!vga_if.HRESETn)
-                            vga_if.cb.HWRITE |-> (vga_if.cb.HWDATA != {24'd0, TEXT}) ##1  (vga_if.cb.HWDATA == {24'd0, TEXT})
-                        );
-
 endprogram  
+
+    // assert_AHB_behaviour1: assert property(     
+    //                       @(posedge vga_if.cb) disable iff (!vga_if.HRESETn)
+    //                         vga_if.cb.HSEL_VGA |-> (vga_if.cb.HWRITE) ##1 (!vga_if.cb.HWRITE)
+    //                     );
+    // assert_AHB_behaviour2: assert property(     
+    //                       @(posedge vga_if.cb) disable iff (!vga_if.HRESETn)
+    //                         vga_if.cb.HWRITE  |-> (vga_if.cb.HSEL_VGA) ##1 (!vga_if.cb.HSEL_VGA)
+    //                     );
+
+    // assert_AHB_behaviour3: assert property(     
+    //                       @(posedge vga_if.cb) disable iff (!vga_if.HRESETn)
+    //                         vga_if.cb.HWRITE |-> (vga_if.cb.HADDR  == 32'h5000_0000) ##1 (vga_if.cb.HADDR  != 32'h5000_0000)
+    //                     );
+
+    // assert_AHB_behaviour4: assert property(     
+    //                       @(posedge vga_if.cb) disable iff (!vga_if.HRESETn)
+    //                         vga_if.cb.HWRITE |-> (vga_if.cb.HTRANS == 2'b10) ##1  (vga_if.cb.HTRANS != 2'b10)
+    //                     );
+
+    // assert_AHB_behaviour5: assert property(     
+    //                       @(posedge vga_if.cb) disable iff (!vga_if.HRESETn)
+    //                         vga_if.cb.HWRITE |-> (vga_if.cb.HWDATA != {24'd0, TEXT}) ##1  (vga_if.cb.HWDATA == {24'd0, TEXT})
+    //                     );
+

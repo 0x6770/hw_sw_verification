@@ -185,29 +185,32 @@ module AHBVGA(
   end
 
 // Functional assertion
-  // check when HSYNC stays low, the RGB value must be 8'h00
-      assert_rgb_zero: assert property(     
+  // check when HSYNC or VSUNC stays low, the RGB value must be 8'h00
+      assert_rgb_zero_h: assert property(     
                               @(posedge HCLK) disable iff (!HRESETn)
-                                (!HSYNC || !VSYNC) |-> RGB == 8'h00
+                                (!HSYNC ) |-> RGB == 8'h00
                             );
-  //  check that HSYNC stays low for 192 clock cycles, stays high for 1410 cycles
-                                // $fell(HSYNC) |-> ( (!HSYNC)[*192] ##1 (HSYNC) [*1410] )
+      assert_rgb_zero_v: assert property(     
+                              @(posedge HCLK) disable iff (!HRESETn)
+                                (!VSYNC ) |-> RGB == 8'h00
+                            );
+
+  //  check that HSYNC stays low for 192 clock cycles
       assert_HSYNC_Timing_stay_low: assert property( 
                                       @(posedge HCLK) disable iff (!HRESETn)
-                                      $fell(HSYNC) |-> (!HSYNC)[*192]);
-                                      
-      // assert_HSYNC_Timing_stay_high: assert property(  
-      //                               @(posedge HCLK) disable iff (!HRESETn)
-      //                                 $rose(HSYNC) |-> HSYNC[*1410]);
+                                      $fell(HSYNC) |-> (!HSYNC)[*192]
+                                    );
 
+  // assert that the sel_console is always the inverted version of sel_image                 
       assert_select: assert property(     
                               @(posedge HCLK) disable iff (!HRESETn)
                                 sel_console == !sel_image
                             );
 
-      assert_last_addr: assert property(     
+  //asset that the AHB signals is correctly caputured by the clock
+      assert_last_haddr: assert property(     
                               @(posedge HCLK) disable iff (!HRESETn)
-                                 HREADY |=>( last_HADDR == $past(HADDR))
+                                 HREADY |=> (last_HADDR == $past(HADDR))
                             );
 
       assert_last_hwrite: assert property(     
@@ -215,26 +218,23 @@ module AHBVGA(
                                 HREADY |=> last_HWRITE == $past(HWRITE)
                             );
 
-      assert_last_sel: assert property(     
+      assert_last_hsel: assert property(     
                               @(posedge HCLK) disable iff (!HRESETn)
                                 HREADY |=> last_HSEL == $past(HSEL)
                             );     
 
-      assert_last_trans: assert property(     
+      assert_last_htrans: assert property(     
                           @(posedge HCLK) disable iff (!HRESETn)
                             HREADY |=> last_HTRANS == $past(HTRANS)
                         );                                    
-
-      // assert_px_rgb: assert property(     
-      //                         @(posedge HCLK) disable iff (!HRESETn)
-      //                           pixel_x == 0 |=> HSYNC == 0
-      //                       );
 
 
    // Verification property   
   // 1. check that each high HSYNC high pulses is seperated by 1602 clock cycles
   // 2. check that each high VSYNC high pulses is seperated by 836244 clock cycles 1602*522 = 836244
-  
+        // assert_HSYNC_Timing_stay_high: assert property(  
+      //                               @(posedge HCLK) disable iff (!HRESETn)
+      //                                 $rose(HSYNC) |-> HSYNC[*1410]);
                                      
 
   // // 5. check after reset is deasseted, the VSYNC will stays low for 3207 (3204 + 3) cycles, then   833040 + 3204 = 836244
@@ -242,17 +242,12 @@ module AHBVGA(
       //                       @(posedge HCLK) disable iff (!HRESETn)
       //                       $rose(VSYNC) |->  ( (VSYNC) [*833040] ##1 (!VSYNC)[*3204] )
       //                     );
-                              
-
-
 
   // 6. check when HSYNC is at front(99 cycles)/back(34 cycles) pulses, the RGB value must be 8'h00
       // assert_HSYNC_front_pulse:  assert property( 
       //                         @(posedge HCLK) disable iff (!HRESETn)
       //                         $rose(HSYNC) |-> (RGB == 8'h00)[*99]
       //                       );
-
-
 
 endmodule
   

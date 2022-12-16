@@ -1,7 +1,0 @@
-../../rtl/AHB_VGA/*.v
-ahb_interface.sv
-vga_interface.sv
-ahb_pkg.sv
-pkg.sv
-test.sv
-tbench_top.sv

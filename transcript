@@ -1,4 +1,3 @@
-# Reading pref.tcl
 # //  Questa Sim-64
 # //  Version 10.7c linux_x86_64 Aug 17 2018
 # //
@@ -13,8 +12,8 @@
 # //  is prohibited from disclosure under the Trade Secrets Act,
 # //  18 U.S.C. Section 1905.
 # //
-# vsim work_opt -gui 
-# Start time: 11:43:03 on Dec 12,2022
+# vsim work_opt -do "run_test.tcl" 
+# Start time: 01:55:33 on Dec 16,2022
 # Loading sv_std.std
 # Loading work.ahblite_sys_tb(fast)
 # Loading work.AHBLITE_SYS(fast)
@@ -45,22 +44,6 @@
 #    Time: 0 ps  Iteration: 0  Instance: /ahblite_sys_tb/dut/uAHBGPIO File: rtl/AHBLITE_SYS.v Line: 332
 # ** Warning: (vsim-3015) [PCDPC] - Port size (32) does not match connection size (1) for port 'HRDATA'. The port definition is at: rtl/AHB_LED/AHB2LED.v(18).
 #    Time: 0 ps  Iteration: 0  Instance: /ahblite_sys_tb/dut/uAHB2LED File: rtl/AHBLITE_SYS.v Line: 350
+# do run_test.tcl
 add wave -position insertpoint sim:/ahblite_sys_tb/dut/uAHBVGA/*
-log -r \*
-run 16000000na
-# Invalid time value: 16000000na
-run 16000000ns
-# ** Error: Assertion error.
-#    Time: 1063255 ns Started: 1063255 ns  Scope: ahblite_sys_tb.dut.uAHBVGA.assert_px_rgb File: rtl/AHB_VGA/AHBVGASYS.sv Line: 208
-# ** Error: Assertion error.
-#    Time: 1063275 ns Started: 1063275 ns  Scope: ahblite_sys_tb.dut.uAHBVGA.assert_px_rgb File: rtl/AHB_VGA/AHBVGASYS.sv Line: 208
-# ** Error: Assertion error.
-#    Time: 1095295 ns Started: 1095295 ns  Scope: ahblite_sys_tb.dut.uAHBVGA.assert_px_rgb File: rtl/AHB_VGA/AHBVGASYS.sv Line: 208
-# ** Error: Assertion error.
-#    Time: 1095315 ns Started: 1095315 ns  Scope: ahblite_sys_tb.dut.uAHBVGA.assert_px_rgb File: rtl/AHB_VGA/AHBVGASYS.sv Line: 208
-# ** Error: Assertion error.
-#    Time: 1127335 ns Started: 1127335 ns  Scope: ahblite_sys_tb.dut.uAHBVGA.assert_px_rgb File: rtl/AHB_VGA/AHBVGASYS.sv Line: 208
-# ** Error: Assertion error.
-#    Time: 1127355 ns Started: 1127355 ns  Scope: ahblite_sys_tb.dut.uAHBVGA.assert_px_rgb File: rtl/AHB_VGA/AHBVGASYS.sv Line: 208
-coverage report -html -htmldir covhtmlreport -assert -directive -cvg -code bcefst -threshL 50 -threshH 90
-# Report created in covhtmlreport/index.html
+# Causality operation skipped due to absence of debug database file
