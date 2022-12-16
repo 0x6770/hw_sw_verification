@@ -1,3 +1,10 @@
-../../rtl/AHB_VGA/*.sv
-vga_tb.sv
-vga_top.sv
+../../rtl/AHB_VGA/DLS_TOP.sv
+../../rtl/AHB_VGA/COMP.sv
+../../rtl/AHB_VGA/AHBVGASYS.sv
+../../rtl/AHB_VGA/AHBVGASYS_r.sv
+../../rtl/AHB_VGA/vga_sync.sv
+../../rtl/AHB_VGA/vga_console.sv
+../../rtl/AHB_VGA/vga_image.sv
+../../rtl/AHB_VGA/counter.sv
+../../rtl/AHB_VGA/dual_port_ram_sync.sv
+../../rtl/AHB_VGA/font_rom.sv
