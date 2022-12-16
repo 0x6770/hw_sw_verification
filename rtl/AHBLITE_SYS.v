@@ -117,9 +117,12 @@ wire            	reset_n = RESET;
 
 // Clock divider, divide the frequency by two, hence less time constraint 
 reg clk_div;
-always @(posedge CLK)
-begin
-    clk_div=~clk_div;
+always @(posedge CLK or negedge reset_n) begin
+    if (!reset_n) begin
+        clk_div <= 1'b0;
+    end else begin
+        clk_div <= ~clk_div;
+    end
 end
 
 assign fclk = clk_div; 

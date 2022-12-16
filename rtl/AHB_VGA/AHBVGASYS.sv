@@ -80,7 +80,6 @@ module AHBVGA(
   wire sel_image;
   reg [7:0] cin;
   
-  
   always @(posedge HCLK)
   if(HREADY)
     begin
