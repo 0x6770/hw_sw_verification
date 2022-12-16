@@ -4,8 +4,8 @@ interface gpio_if (
 );
   logic [16:0] GPIOIN;
   logic [16:0] GPIOOUT;
-  logic PARITYSEL;
-  logic PARITYERR;
+  bit          PARITYSEL;
+  bit          PARITYERR;
 
   modport driver(input clk, input reset_n, output GPIOIN, output PARITYSEL);
   modport monitor(
@@ -24,8 +24,4 @@ interface gpio_if (
       output GPIOOUT,
       output PARITYERR
   );
-endinterface
-
-interface err_if;
-  bit error;
 endinterface

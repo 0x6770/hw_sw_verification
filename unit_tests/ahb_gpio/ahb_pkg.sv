@@ -11,7 +11,6 @@ package ahb_pkg;
 
     function void display(string tag = "");
       $display("T=%t [%s] :", $time, tag);
-      // $display("===== AHB transaction [%0d] =====", id);
       $display("data:   0x%4h", data);
       $display("parity: %1b", parity);
     endfunction : display
@@ -23,8 +22,23 @@ package ahb_pkg;
     function void calc_parity();
       parity = parity_sel ? ~(^data) : ^data;
     endfunction
-
   endclass : transaction
+
+  class invalid_write_signal;
+    rand bit [31:0] HADDR;
+    rand bit        HSEL;
+    rand bit        HWRITE;
+    rand bit [1:0]  HSIZE;
+    rand bit [2:0]  HTRANS;
+    rand bit [31:0] HWDATA;
+    rand bit        HREADY;
+    rand bit [15:0] direction;
+
+    constraint c1 { HADDR dist { [0:4]:/50, [5:2**32-1]:/50 }; }
+    constraint c2 { (HSEL & HWRITE & HTRANS[1] && (direction == 1)) == 0; } // must be a invalid write
+    constraint c3 { HTRANS[1] dist { 0:=50, 1:=50 }; }
+    constraint c4 { direction dist { [0:1]:/90, [2:2**16-1]:/10 }; }
+  endclass
 
   // Generator for AHB interface transaction
   class generator;
@@ -59,18 +73,15 @@ package ahb_pkg;
   // Driver for AHB interface
   class driver;
     virtual ahb_if vif;
-    virtual err_if err_vif;
     mailbox        drv_box;
     // mailbox scb_expected_box;
     int            num_items_received = 0;
     bit            write              = 1;
 
     // constructor
-    function new(virtual ahb_if vif, virtual err_if err_vif, mailbox drv_box);
+    function new(virtual ahb_if vif, mailbox drv_box);
       this.vif     = vif;
       this.drv_box = drv_box;
-      this.err_vif = err_vif;
-      // this.scb_expected_box = scb_expected_box;
     endfunction
 
     //Reset task, Reset the Interface signals to default/initial values
@@ -88,7 +99,7 @@ package ahb_pkg;
       $display("T=%t [AHB DRIVER] : reset ended", $time);
     endtask
 
-    task switch_mode(bit write);
+    task switch_mode(logic [15:0] dir);
       @(posedge vif.clk);
       vif.sel   <= 1'b1;
       vif.addr  <= AHB_DIR_ADDR;
@@ -103,7 +114,7 @@ package ahb_pkg;
       vif.write <= 1'b0;
       vif.size  <= 3'b0;
       vif.trans <= 2'b0;
-      vif.wdata <= write ? 16'h1 : 16'h0;
+      vif.wdata <= dir;
     endtask
 
     // write takes 2 cycles to complete
@@ -122,12 +133,25 @@ package ahb_pkg;
       vif.wdata[15:0] <= item.data;
     endtask
 
+    task invalid_write(invalid_write_signal s);
+      @(posedge vif.clk);
+      vif.sel   <= s.HSEL;
+      vif.addr  <= s.HADDR;
+      vif.write <= s.HWRITE;
+      vif.size  <= s.HSIZE;
+      vif.trans <= s.HTRANS;
+      vif.wdata <= s.HWDATA;
+      vif.ready <= s.HREADY;
+      @(posedge vif.clk); 
+      vif.sel   <= 1'b0;
+      vif.write <= 1'b0;
+      vif.wdata <= $urandom();
+    endtask
+
     task read_data();
       @(posedge vif.clk);
       vif.sel       <= 1'b1;
       vif.write     <= 1'b0;
-      // err_vif.error <= $urandom_range(0, 1);
-      // err_vif.error <= 1;
     endtask
 
     task keep_write();
@@ -141,8 +165,42 @@ package ahb_pkg;
         item.display("AHB DRIVER");
 `endif
         write_data(item);
-        // @(posedge vif.clk);
         num_items_received++;
+      end
+    endtask
+
+    task keep_write_with_error();
+      $display("T=%t [AHB DRIVER] : starting", $time);
+
+      forever begin
+        if ($urandom()%2) begin
+          transaction item;
+          $display("T=%t [AHB DRIVER] : waiting for item [%0d]", $time, num_items_received);
+          drv_box.get(item);
+`ifdef DEBUG
+          item.display("AHB DRIVER");
+`endif
+          write_data(item);
+          num_items_received++;
+        end else begin
+          invalid_write_signal s = new ();
+          if (!s.randomize()) $fatal("[AHB Generator] : transaction randomization failed");
+          switch_mode(s.direction);
+          invalid_write(s);
+          if (!s.randomize()) $fatal("[AHB Generator] : transaction randomization failed");
+          switch_mode(s.direction);
+          invalid_write(s);
+          if (!s.randomize()) $fatal("[AHB Generator] : transaction randomization failed");
+          switch_mode(s.direction);
+          invalid_write(s);
+          if (!s.randomize()) $fatal("[AHB Generator] : transaction randomization failed");
+          switch_mode(s.direction);
+          invalid_write(s);
+          if (!s.randomize()) $fatal("[AHB Generator] : transaction randomization failed");
+          switch_mode(s.direction);
+          invalid_write(s);
+          switch_mode(1);
+        end
       end
     endtask
 
@@ -159,15 +217,15 @@ package ahb_pkg;
 
   // Monitor for AHB interface
   class wdata_monitor;
-    virtual ahb_if vif;
-    mailbox        scb_box;
-    bit            parity_sel;
-    event          data_written;
+    virtual ahb_if  ahb_vif;
+    virtual gpio_if gpio_vif;
+    mailbox         scb_box;
+    event           data_written;
 
-    function new(virtual ahb_if vif, mailbox scb_box, bit parity_sel, event data_written);
-      this.vif          = vif;
+    function new(virtual ahb_if ahb_vif, virtual gpio_if gpio_vif, mailbox scb_box, event data_written);
+      this.ahb_vif      = ahb_vif;
+      this.gpio_vif     = gpio_vif;
       this.scb_box      = scb_box;
-      this.parity_sel   = parity_sel;
       this.data_written = data_written;
     endfunction
 
@@ -175,12 +233,12 @@ package ahb_pkg;
       transaction item;
       $display("T=%t [AHB WDATA Monitor] : starting", $time);
       forever begin
-        @(posedge vif.clk);
-        if (vif.sel && (vif.addr === AHB_DATA_ADDR) && vif.write) begin
-          @(posedge vif.clk);
+        @(posedge ahb_vif.clk);
+        if (ahb_vif.sel && (ahb_vif.addr === AHB_DATA_ADDR) && ahb_vif.write) begin
+          @(posedge ahb_vif.clk);
           item             = new();
-          item.data        = vif.wdata[15:0];
-          item.parity_sel  = parity_sel;
+          item.data        = ahb_vif.wdata[15:0];
+          item.parity_sel  = gpio_vif.PARITYSEL;
           item.calc_parity();
 `ifdef DEBUG
           item.display("AHBMONITOR HWDATA");
@@ -193,15 +251,15 @@ package ahb_pkg;
   endclass : wdata_monitor
 
   class rdata_monitor;
-    virtual ahb_if vif;
-    mailbox        scb_box;
-    bit            parity_sel;
-    event          data_written;
+    virtual ahb_if  ahb_vif;
+    virtual gpio_if gpio_vif;
+    mailbox         scb_box;
+    event           data_written;
 
-    function new(virtual ahb_if vif, mailbox scb_box, bit parity_sel, event data_written);
-      this.vif          = vif;
+    function new(virtual ahb_if ahb_vif, virtual gpio_if gpio_vif, mailbox scb_box, event data_written);
+      this.ahb_vif      = ahb_vif;
+      this.gpio_vif     = gpio_vif;
       this.scb_box      = scb_box;
-      this.parity_sel   = parity_sel;
       this.data_written = data_written;
     endfunction
 
@@ -211,11 +269,11 @@ package ahb_pkg;
 
       forever begin
         @(data_written);
-        @(posedge vif.clk);
+        @(posedge ahb_vif.clk);
         item             = new();
-        item.data        = vif.rdata[15:0];
-        item.parity      = vif.rdata[16];
-        item.parity_sel  = this.parity_sel;
+        item.data        = ahb_vif.rdata[15:0];
+        item.parity      = ahb_vif.rdata[16];
+        item.parity_sel  = gpio_vif.PARITYSEL;
         item.calc_parity();
 `ifdef DEBUG
         item.display("AHBMONITOR HRDATA");

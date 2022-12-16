@@ -4,17 +4,14 @@ package pkg;
   class scoreboard;
     mailbox         scb_expected_box;
     mailbox         scb_observed_box;
-    virtual err_if  err_vif;
     virtual gpio_if gpio_vif;
 
     int num_items_observed = 0;
 
-    function new(mailbox scb_expected_box, mailbox scb_observed_box,
-                 virtual err_if err_vif, virtual gpio_if gpio_vif);
+    function new(mailbox scb_expected_box, mailbox scb_observed_box, virtual gpio_if gpio_vif);
       this.scb_expected_box = scb_expected_box;
       this.scb_observed_box = scb_observed_box;
       this.gpio_vif         = gpio_vif;
-      this.err_vif          = err_vif;
     endfunction
 
     task run();
@@ -68,16 +65,13 @@ package pkg;
     // interface
     virtual ahb_if         ahb_vif;
     virtual gpio_if        gpio_vif;
-    virtual err_if         err_vif;
 
     // constructor
-    function new(virtual ahb_if ahb_vif, virtual gpio_if gpio_vif, virtual err_if err_vif, int num_transactions);
+    function new(virtual ahb_if ahb_vif, virtual gpio_if gpio_vif, int num_transactions);
       $display("[ENVIRONMENT] : constructing new environment");
       this.ahb_vif            = ahb_vif;
       this.gpio_vif           = gpio_vif;
       this.num_transactions   = num_transactions;
-      this.gpio_vif.PARITYSEL = $urandom_range(0, 1);
-      this.err_vif            = err_vif;
 
       // initialise mailbox
       ahb_drv_box           = new();
@@ -88,12 +82,12 @@ package pkg;
       gpio_scb_observed_box = new();
       // initialise testbench components
       gpio_generator        = new(.box(gpio_drv_box), .cnt(num_transactions), .finished(gen_finished));
-      ahb_driver            = new(.vif( ahb_vif.driver), .drv_box( ahb_drv_box), .err_vif(err_vif));
-      gpio_driver           = new(.vif(gpio_vif.driver), .drv_box(gpio_drv_box), .err_vif(err_vif), .data_written(data_written));
+      ahb_driver            = new(.vif( ahb_vif.driver), .drv_box( ahb_drv_box));
+      gpio_driver           = new(.vif(gpio_vif.driver), .drv_box(gpio_drv_box), .data_written(data_written));
       ahb_rdata_monitor = new(
-        .vif(ahb_vif),
+        .ahb_vif(ahb_vif),
+        .gpio_vif(gpio_vif),
         .scb_box(ahb_scb_observed_box),
-        .parity_sel(this.gpio_vif.PARITYSEL),
         .data_written(data_written)
       );
       gpio_in_monitor = new(
@@ -104,7 +98,6 @@ package pkg;
       scoreboard = new(
         .scb_expected_box(gpio_scb_expected_box),
         .scb_observed_box(ahb_scb_observed_box),
-        .err_vif(err_vif),
         .gpio_vif(gpio_vif)
       );
     endfunction : new

@@ -62,21 +62,26 @@ package gpio_pkg;
 
   class driver;
     virtual gpio_if vif;
-    virtual err_if  err_vif;
     mailbox         drv_box;
     event           data_written;
     int             num_items_received = 0;
 
-    function new(virtual gpio_if vif, virtual err_if err_vif, mailbox drv_box, event data_written);
+    function new(virtual gpio_if vif, mailbox drv_box, event data_written);
       this.vif          = vif;
-      this.err_vif      = err_vif;
       this.drv_box      = drv_box;
       this.data_written = data_written;
     endfunction
 
     task reset();
       wait (!vif.reset_n);
-      vif.GPIOIN <= 'h0;
+      vif.GPIOIN    <= 'h0;
+      vif.PARITYSEL <= 'h0;
+      @(posedge vif.clk);
+      vif.PARITYSEL <= 'h1;
+      @(posedge vif.clk);
+      vif.PARITYSEL <= 'h0;
+      @(posedge vif.clk);
+      vif.PARITYSEL <= $urandom()%2;
       wait (vif.reset_n);
     endtask
 

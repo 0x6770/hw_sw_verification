@@ -5,18 +5,15 @@ package pkg;
     mailbox         scb_expected_box;
     mailbox         scb_observed_box;
     mailbox         gpio_drv_box;
-    virtual err_if  err_vif;
     virtual gpio_if gpio_vif;
 
     int num_items_observed = 0;
 
-    function new(mailbox scb_expected_box, mailbox scb_observed_box, mailbox gpio_drv_box,
-                 virtual err_if err_vif, virtual gpio_if gpio_vif);
+    function new(mailbox scb_expected_box, mailbox scb_observed_box, mailbox gpio_drv_box, virtual gpio_if gpio_vif);
       this.scb_expected_box = scb_expected_box;
       this.scb_observed_box = scb_observed_box;
       this.gpio_drv_box     = gpio_drv_box;
       this.gpio_vif         = gpio_vif;
-      this.err_vif          = err_vif;
     endfunction
 
     task run();
@@ -36,8 +33,6 @@ package pkg;
 `endif
         assert (expected_item.data   === item.data);
         assert (expected_item.parity === item.parity);
-        // assert (expected_item.parity === (err_vif.error ? ~item.parity : item.parity));
-        assert (err_vif.error === gpio_vif.PARITYERR);
         num_items_observed++;
       end
     endtask
@@ -66,20 +61,18 @@ package pkg;
     // create event to indicate completion of transaction generation
     event                  gen_finished;
     event                  data_written;
+    event                  gpio_data_written;
 
     // interface
     virtual ahb_if         ahb_vif;
     virtual gpio_if        gpio_vif;
-    virtual err_if         err_vif;
 
     // constructor
-    function new(virtual ahb_if ahb_vif, virtual gpio_if gpio_vif, virtual err_if err_vif, int num_transactions);
+    function new(virtual ahb_if ahb_vif, virtual gpio_if gpio_vif, int num_transactions);
       $display("[ENVIRONMENT] : constructing new environment");
       this.ahb_vif            = ahb_vif;
       this.gpio_vif           = gpio_vif;
       this.num_transactions   = num_transactions;
-      this.gpio_vif.PARITYSEL = $urandom_range(0, 1);
-      this.err_vif            = err_vif;
 
       // initialise mailbox
       ahb_drv_box           = new();
@@ -90,11 +83,12 @@ package pkg;
       gpio_scb_observed_box = new();
       // initialise testbench components
       ahb_generator         = new(.box(ahb_drv_box), .cnt(num_transactions), .finished(gen_finished));
-      ahb_driver            = new(.vif( ahb_vif.driver), .drv_box( ahb_drv_box), .err_vif(err_vif));
+      ahb_driver            = new(.vif( ahb_vif.driver), .drv_box( ahb_drv_box));
+      gpio_driver           = new(.vif(gpio_vif.driver), .drv_box(gpio_drv_box), .data_written(gpio_data_written));
       ahb_wdata_monitor = new(
-        .vif(ahb_vif),
+        .ahb_vif(ahb_vif),
+        .gpio_vif(gpio_vif.monitor),
         .scb_box(ahb_scb_expected_box),
-        .parity_sel(this.gpio_vif.PARITYSEL),
         .data_written(data_written)
       );
       gpio_out_monitor = new(
@@ -106,7 +100,6 @@ package pkg;
         .scb_expected_box(ahb_scb_expected_box),
         .scb_observed_box(gpio_scb_observed_box),
         .gpio_drv_box(gpio_drv_box),
-        .err_vif(err_vif),
         .gpio_vif(gpio_vif)
       );
     endfunction : new
@@ -114,6 +107,7 @@ package pkg;
     task pre_test();
       fork
         ahb_driver.reset();
+        gpio_driver.reset();
       join_any
 
       ahb_driver.switch_mode(1);
@@ -122,7 +116,7 @@ package pkg;
     task test();
       fork
         ahb_generator.run();
-        ahb_driver.keep_write();
+        ahb_driver.keep_write_with_error();
         ahb_wdata_monitor.run();
         gpio_out_monitor.run();
         scoreboard.run();

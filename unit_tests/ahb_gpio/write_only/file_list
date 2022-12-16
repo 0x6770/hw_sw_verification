@@ -3,6 +3,6 @@
 ../gpio_interface.sv
 ../ahb_pkg.sv
 ../gpio_pkg.sv
+../tbench_top.sv
 pkg.sv
 test.sv
-tbench_top.sv
